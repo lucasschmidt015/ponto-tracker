@@ -6,10 +6,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  useColorScheme,
+  ColorSchemeName,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const Login: React.FC = () => {
+  const scheme: ColorSchemeName = useColorScheme();
+  const isDark = scheme === 'dark';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,27 +27,29 @@ const Login: React.FC = () => {
     console.log('Forgot password tapped');
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.appName}>BlueTrack</Text>
+  const themedStyles = getStyles(isDark);
 
-      <Text style={styles.title}>Welcome back 👋</Text>
+  return (
+    <SafeAreaView style={themedStyles.container}>
+      <Text style={themedStyles.appName}>BlueTrack</Text>
+
+      <Text style={themedStyles.title}>Welcome back 👋</Text>
 
       <TextInput
-        style={styles.input}
+        style={themedStyles.input}
         placeholder="Email"
-        placeholderTextColor="#888"
+        placeholderTextColor={isDark ? '#aaa' : '#888'}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
       />
 
-      <View style={styles.passwordContainer}>
+      <View style={themedStyles.passwordContainer}>
         <TextInput
-          style={styles.passwordInput}
+          style={themedStyles.passwordInput}
           placeholder="Password"
-          placeholderTextColor="#888"
+          placeholderTextColor={isDark ? '#aaa' : '#888'}
           secureTextEntry={!showPassword}
           value={password}
           onChangeText={setPassword}
@@ -51,17 +58,17 @@ const Login: React.FC = () => {
           <Icon
             name={showPassword ? 'eye-off' : 'eye'}
             size={22}
-            color="#888"
+            color={isDark ? '#aaa' : '#888'}
           />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotText}>Forgot your password?</Text>
+        <Text style={themedStyles.forgotText}>Forgot your password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Login</Text>
+      <TouchableOpacity style={themedStyles.loginButton} onPress={handleLogin}>
+        <Text style={themedStyles.loginButtonText}>Login</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -69,69 +76,75 @@ const Login: React.FC = () => {
 
 export default Login;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#1E90FF',
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '600',
-    marginBottom: 32,
-    alignSelf: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-    fontSize: 16,
-    color: '#000',
-    marginHorizontal: 20,
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    marginBottom: 12,
-    marginHorizontal: 20,
-  },
-  passwordInput: {
-    flex: 1,
-    height: 50,
-    fontSize: 16,
-    color: '#000',
-  },
-  forgotText: {
-    color: '#1E90FF',
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-    marginHorizontal: 23,
-  },
-  loginButton: {
-    backgroundColor: '#1E90FF',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-    marginHorizontal: 20,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const getStyles = (isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 24,
+      backgroundColor: isDark ? '#121212' : '#fff',
+      justifyContent: 'center',
+    },
+    appName: {
+      fontSize: 32,
+      fontWeight: '800',
+      colour: '#1E90FF',
+      alignSelf: 'center',
+      marginBottom: 10,
+      color: isDark ? '#1E90FF' : '#1E90FF',
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '600',
+      marginBottom: 32,
+      alignSelf: 'center',
+      color: isDark ? '#fff' : '#000',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: isDark ? '#444' : '#ccc',
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 16,
+      fontSize: 16,
+      color: isDark ? '#fff' : '#000',
+      backgroundColor: isDark ? '#1E1E1E' : '#fff',
+      marginHorizontal: 20,
+    },
+    passwordContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: isDark ? '#444' : '#ccc',
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      marginBottom: 12,
+      marginHorizontal: 20,
+      backgroundColor: isDark ? '#1E1E1E' : '#fff',
+    },
+    passwordInput: {
+      flex: 1,
+      height: 50,
+      fontSize: 16,
+      color: isDark ? '#fff' : '#000',
+    },
+    forgotText: {
+      color: '#1E90FF',
+      alignSelf: 'flex-end',
+      marginBottom: 24,
+      marginHorizontal: 23,
+    },
+    loginButton: {
+      backgroundColor: '#1E90FF',
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginBottom: 16,
+      marginHorizontal: 20,
+    },
+    loginButtonText: {
+      colour: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#fff',
+    },
+  });
