@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   useColorScheme,
   ColorSchemeName,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -18,9 +19,27 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+  
+    if (password.length < 5) {
+      alert('Password must be at least 5 characters long.');
+      return;
+    }
+  
+    setLoading(true);
     console.log('Logging in with:', { email, password });
+  
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
   };
 
   const handleForgotPassword = () => {
@@ -67,8 +86,16 @@ const Login: React.FC = () => {
         <Text style={themedStyles.forgotText}>Forgot your password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={themedStyles.loginButton} onPress={handleLogin}>
-        <Text style={themedStyles.loginButtonText}>Login</Text>
+      <TouchableOpacity
+        style={themedStyles.loginButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={themedStyles.loginButtonText}>Login</Text>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -87,7 +114,6 @@ const getStyles = (isDark: boolean) =>
     appName: {
       fontSize: 32,
       fontWeight: '800',
-      colour: '#1E90FF',
       alignSelf: 'center',
       marginBottom: 10,
       color: isDark ? '#1E90FF' : '#1E90FF',
@@ -142,7 +168,6 @@ const getStyles = (isDark: boolean) =>
       marginHorizontal: 20,
     },
     loginButtonText: {
-      colour: '#fff',
       fontSize: 16,
       fontWeight: '600',
       color: '#fff',
