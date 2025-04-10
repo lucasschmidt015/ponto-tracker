@@ -8,8 +8,9 @@ import { Redirect } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
 import { restoreToken } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store';
+import { withAuthGuard } from '@/utils/WithAuthGuard';
 
-export default function TabOneScreen() {
+const TabOneScreen = () => {
   const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth)
 
   const dispatch = useDispatch<AppDispatch>();
@@ -54,3 +55,6 @@ const styles = StyleSheet.create({
     width: '80%',
   },
 });
+
+
+export default TabOneScreen;
