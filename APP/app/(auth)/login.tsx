@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '@/store/slices/authSlice';
+import { RootState, AppDispatch } from '@/store';
 import {
   View,
   Text,
@@ -11,8 +14,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Redirect } from 'expo-router';
+
 
 const Login: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
   const scheme: ColorSchemeName = useColorScheme();
   const isDark = scheme === 'dark';
 
@@ -38,6 +46,7 @@ const Login: React.FC = () => {
     console.log('Logging in with:', { email, password });
   
     setTimeout(() => {
+      dispatch(login('mock-token-123')); 
       setLoading(false);
     }, 2000);
   };
@@ -47,6 +56,10 @@ const Login: React.FC = () => {
   };
 
   const themedStyles = getStyles(isDark);
+
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <SafeAreaView style={themedStyles.container}>
