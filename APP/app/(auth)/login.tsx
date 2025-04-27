@@ -58,7 +58,7 @@ const Login: React.FC = () => {
   const themedStyles = getStyles(isDark);
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(drawer)/(home)" />;
   }
 
   return (

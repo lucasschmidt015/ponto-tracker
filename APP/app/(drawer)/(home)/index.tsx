@@ -3,15 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 
 import { useEffect } from 'react';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Redirect } from "expo-router";
 
 import { useDispatch, useSelector } from 'react-redux';
 import { restoreToken } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store';
-import { withAuthGuard } from '@/utils/WithAuthGuard';
+import { useColorScheme } from 'react-native';
 
-const TabOneScreen = () => {
+const Home = () => {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+  const styles = getStyles(isDarkMode);
   const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth)
 
   const dispatch = useDispatch<AppDispatch>();
@@ -61,6 +63,9 @@ const TabOneScreen = () => {
 }
 
 function TimeItem({ time }: { time: string }) {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+  const styles = getStyles(isDarkMode);
   return (
     <View style={styles.timeItem}>
       <Text style={styles.timeText}>• {time}</Text>
@@ -69,10 +74,10 @@ function TimeItem({ time }: { time: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: isDarkMode ? '#000' : '#f9f9f9',
   },
   topContainer: {
     alignItems: 'center',
@@ -80,34 +85,35 @@ const styles = StyleSheet.create({
     height: 250
   },
   semiCircle: {
-    width: '100%', 
+    width: '100%',
     height: '50%',
-    backgroundColor: '#d9d9d9',
+    backgroundColor: isDarkMode ? '#333' : '#d9d9d9',
     borderBottomLeftRadius: 170,
     borderBottomRightRadius: 170,
     overflow: 'hidden',
   },
   header: {
     alignItems: 'center',
-    marginTop: 32,
+    marginTop: 52,
     marginBottom: 32,
   },
   greeting: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: isDarkMode ? '#fff' : '#000',
   },
   date: {
     fontSize: 16,
-    color: '#777',
+    color: isDarkMode ? '#ccc' : '#777',
   },
   timesContainer: {
-    height: 200, 
-    marginTop: 20,
+    height: 200,
+    marginTop: 120,
     marginBottom: 32,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#ffffff', // optional: gives it a nice background
+    backgroundColor: isDarkMode ? '#111' : '#fff',
   },
   timeItem: {
     flexDirection: 'row',
@@ -116,10 +122,11 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 18,
+    color: isDarkMode ? '#fff' : '#000',
   },
   check: {
     fontSize: 18,
-    marginLeft: 20
+    marginLeft: 20,
   },
   summary: {
     alignItems: 'center',
@@ -127,15 +134,16 @@ const styles = StyleSheet.create({
   },
   timeWorkedLabel: {
     fontSize: 16,
-    color: '#777',
+    color: isDarkMode ? '#ccc' : '#777',
   },
   timeWorked: {
     fontSize: 32,
     fontWeight: 'bold',
     marginTop: 4,
+    color: isDarkMode ? '#fff' : '#000',
   },
   button: {
-    backgroundColor: '#1a3d7c',
+    backgroundColor: isDarkMode ? '#355ca9' : '#1a3d7c',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -149,4 +157,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default TabOneScreen;
+export default Home;
