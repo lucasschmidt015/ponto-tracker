@@ -1,8 +1,9 @@
-import { StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+
 import { useEffect } from 'react';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
 import { Redirect } from "expo-router";
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -31,28 +32,119 @@ const TabOneScreen = () => {
     return <Redirect href="/(auth)/login" />;
   }
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.topContainer}>
+        <View style={styles.semiCircle} />
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Hello Lucas Schmidt</Text>
+          <Text style={styles.date}>Tuesday, March 13 2025</Text>
+        </View>
+      </View>
+
+      <View style={styles.timesContainer}>
+        <TimeItem time="07:45" />
+        <TimeItem time="12:00" />
+        <TimeItem time="13:30" />
+        <TimeItem time="18:00" />
+      </View>
+
+      <View style={styles.summary}>
+        <Text style={styles.timeWorkedLabel}>Time Worked Today:</Text>
+        <Text style={styles.timeWorked}>05:40</Text>
+      </View>
+
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Register</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+function TimeItem({ time }: { time: string }) {
+  return (
+    <View style={styles.timeItem}>
+      <Text style={styles.timeText}>• {time}</Text>
+      <Text style={styles.check}>✅</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexGrow: 1,
+    backgroundColor: '#f9f9f9',
   },
-  title: {
+  topContainer: {
+    alignItems: 'center',
+    width: '100%',
+    height: 250
+  },
+  semiCircle: {
+    width: '100%', 
+    height: '50%',
+    backgroundColor: '#d9d9d9',
+    borderBottomLeftRadius: 170,
+    borderBottomRightRadius: 170,
+    overflow: 'hidden',
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 32,
+  },
+  greeting: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 4,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  date: {
+    fontSize: 16,
+    color: '#777',
+  },
+  timesContainer: {
+    height: 200, 
+    marginTop: 20,
+    marginBottom: 32,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#ffffff', // optional: gives it a nice background
+  },
+  timeItem: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  timeText: {
+    fontSize: 18,
+  },
+  check: {
+    fontSize: 18,
+    marginLeft: 20
+  },
+  summary: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  timeWorkedLabel: {
+    fontSize: 16,
+    color: '#777',
+  },
+  timeWorked: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  button: {
+    backgroundColor: '#1a3d7c',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 32,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
