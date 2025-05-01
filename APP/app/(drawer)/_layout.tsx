@@ -34,12 +34,27 @@ export default function DrawerLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
+        initialRouteName="(home)"
         drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
         <Drawer.Screen
           name="(home)"
           options={{
             drawerLabel: 'Home',
+            headerShown: false,
+          }}
+        />
+        <Drawer.Screen
+          name="history"
+          options={{
+            drawerLabel: 'History',
+            headerShown: false,
+          }}
+        />
+        <Drawer.Screen
+          name="reports"
+          options={{
+            drawerLabel: 'Reports',
             headerShown: false,
           }}
         />
