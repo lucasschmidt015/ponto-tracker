@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 
 import { useEffect } from 'react';
 
@@ -10,6 +10,7 @@ import { restoreToken } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store';
 import { useColorScheme } from 'react-native';
 import OpenDrawerButton from '@/components/OpenDrawerButton';
+import Loading from '@/components/Loading';
 
 
 const Home = () => {
@@ -27,7 +28,8 @@ const Home = () => {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <OpenDrawerButton />
+        <Loading/>
       </View>
     );
   }
@@ -36,22 +38,22 @@ const Home = () => {
     return <Redirect href="/(auth)/login" />;
   }
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} scrollEnabled={false}>
       <OpenDrawerButton/>
       <View style={styles.topContainer}>
         <View style={styles.semiCircle} />
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hello Lucas Schmidt</Text>
+          <Text style={styles.greeting}>Hello Lucas Torchelsen Schmidt</Text>
           <Text style={styles.date}>Tuesday, March 13 2025</Text>
         </View>
       </View>
 
-      <View style={styles.timesContainer}>
+      <ScrollView style={styles.timesContainer} nestedScrollEnabled={true}>
         <TimeItem time="07:45" />
         <TimeItem time="12:00" />
         <TimeItem time="13:30" />
         <TimeItem time="18:00" />
-      </View>
+      </ScrollView>
 
       <View style={styles.summary}>
         <Text style={styles.timeWorkedLabel}>Time Worked Today:</Text>
@@ -82,6 +84,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     flexGrow: 1,
     backgroundColor: isDarkMode ? '#000' : '#f9f9f9',
   },
+  
   topContainer: {
     alignItems: 'center',
     width: '100%',
@@ -111,12 +114,15 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     color: isDarkMode ? '#ccc' : '#777',
   },
   timesContainer: {
-    height: 200,
+    height: 220,
     marginTop: 120,
     marginBottom: 32,
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: isDarkMode ? '#111' : '#fff',
+    paddingHorizontal: 16,
+    flexGrow: 0,
+    flexShrink: 0,
   },
   timeItem: {
     flexDirection: 'row',

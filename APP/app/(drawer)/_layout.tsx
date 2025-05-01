@@ -51,7 +51,6 @@ export default function DrawerLayout() {
 const styles = StyleSheet.create({
   profileContainer: {
     padding: 20,
-    // alignItems: 'center',
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
