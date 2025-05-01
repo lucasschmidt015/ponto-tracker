@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { restoreToken } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store';
 import { useColorScheme } from 'react-native';
+import OpenDrawerButton from '@/components/OpenDrawerButton';
+
 
 const Home = () => {
   const colorScheme = useColorScheme();
@@ -35,6 +37,7 @@ const Home = () => {
   }
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <OpenDrawerButton/>
       <View style={styles.topContainer}>
         <View style={styles.semiCircle} />
         <View style={styles.header}>
