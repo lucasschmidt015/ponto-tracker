@@ -10,6 +10,7 @@ import { restoreToken } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store';
 import { useColorScheme } from 'react-native';
 import OpenDrawerButton from '@/components/OpenDrawerButton';
+import LogoutButton from '@/components/LogoutButton';
 import Loading from '@/components/Loading';
 
 
@@ -40,6 +41,7 @@ const Home = () => {
   return (
     <ScrollView contentContainerStyle={styles.container} scrollEnabled={false}>
       <OpenDrawerButton/>
+      <LogoutButton/>
       <View style={styles.topContainer}>
         <View style={styles.semiCircle} />
         <View style={styles.header}>
