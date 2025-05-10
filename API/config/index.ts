@@ -5,8 +5,12 @@ require('dotenv').config();
 
 import devConfig from './dev';
 import prodConfig from './prod';
+import defaultConfig from './default';
+import { AppConfig } from './types';
 
-let configs = {};
+let configs: AppConfig = {
+  ...defaultConfig,
+};
 
 const production =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod';

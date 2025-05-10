@@ -1,4 +1,6 @@
-const devConfig = {
+import { AppConfig } from './types';
+
+const devConfig: AppConfig = {
   db: {
     dialect: 'postgres',
     database: process.env.DATABASE_NAME || 'ponto-tracker',
