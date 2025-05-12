@@ -1,68 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { Users } from './users.model';
+import { v4 as uuidv4 } from 'uuid';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-	findOne(id: string) {
-		return {
-			id,
-			name: 'Richard Lionhart',
-			age: 49,
-			email: 'teste@teste.com',
-		};
+	constructor(@InjectModel(Users) private usersModule: typeof Users) {}
+
+	findOne(_id: string): Promise<Users | null> {
+		return this.usersModule.findOne({
+			where: {
+				_id,
+			},
+			attributes: { exclude: ['password'] },
+		});
 	}
 
-	findAll() {
-		return [
-			{
-				id: 1,
-				name: 'Richard Lionhart',
-				age: 49,
-				email: 'teste@teste.com',
-			},
-			{
-				id: 2,
-				name: 'Richard Lionhart',
-				age: 49,
-				email: 'teste@teste.com',
-			},
-			{
-				id: 3,
-				name: 'Richard Lionhart',
-				age: 49,
-				email: 'teste@teste.com',
-			},
-			{
-				id: 4,
-				name: 'Richard Lionhart',
-				age: 49,
-				email: 'teste@teste.com',
-			},
-			{
-				id: 5,
-				name: `Luciano's red flag`,
-				age: 49,
-				email: 'teste@teste.com',
-			},
-		];
+	findAll(): Promise<Users[]> {
+		return this.usersModule.findAll({
+			attributes: { exclude: ['password'] },
+		});
 	}
 
-	// We would need to check if it's a good idea to use the dto here
-	create(user: CreateUserDto) {
-		return user;
+	async create(user: CreateUserDto) {
+		const _id = uuidv4();
+
+		const userAlreadyExists = await this.usersModule.findOne({
+			where: {
+				email: user.email,
+			},
+		});
+
+		if (userAlreadyExists) {
+			throw new ConflictException('Email already in use');
+		}
+
+		const hashedPassword = await bcrypt.hash(user.password, 10);
+
+		return this.usersModule.create({
+			_id,
+			...user,
+			password: hashedPassword,
+		});
 	}
 
-	update(id: string, body: UpdateUserDto) {
-		return {
-			id,
-			...body,
-		};
+	update(_id: string, data: UpdateUserDto): Promise<[number, Users[]]> {
+		return this.usersModule.update(data, {
+			where: {
+				_id,
+			},
+			returning: true,
+		});
 	}
 
-	delete(id: string) {
-		return {
-			id,
-		};
+	delete(_id: string): Promise<number> {
+		return this.usersModule.destroy({
+			where: {
+				_id,
+			},
+		});
 	}
 }
