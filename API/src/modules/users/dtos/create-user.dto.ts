@@ -10,7 +10,7 @@ export class CreateUserDto {
 	email: string;
 
 	@IsDateString()
-	birthdayDate: string;
+	birthday_date: string;
 
 	@IsString()
 	@MinLength(5)
@@ -19,5 +19,5 @@ export class CreateUserDto {
 	@IsString()
 	@MinLength(5)
 	@Match('password', { message: 'Passwords do not match' })
-	passwordConfirmation: string;
+	password_confirmation: string;
 }

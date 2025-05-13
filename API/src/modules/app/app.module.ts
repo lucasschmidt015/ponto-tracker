@@ -6,12 +6,13 @@ import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Users } from '../users/users.model';
+import { Companies } from '../companies/companies.model';
 
 @Module({
 	imports: [
 		SequelizeModule.forRoot({
 			...configs.db,
-			models: [Users],
+			models: [Users, Companies],
 		}),
 		UsersModule,
 		CompaniesModule,

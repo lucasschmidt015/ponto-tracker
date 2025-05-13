@@ -12,7 +12,7 @@ export class Users extends Model {
 	email: string;
 
 	@Column
-	birthdayDate: string;
+	birthday_date: string;
 
 	@Column
 	password: string;
