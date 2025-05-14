@@ -25,7 +25,7 @@ export class UsersService {
 		});
 	}
 
-	async create(user: CreateUserDto) {
+	async create(user: CreateUserDto): Promise<Users> {
 		const _id = uuidv4();
 
 		const userAlreadyExists = await this.usersModule.findOne({
@@ -47,8 +47,8 @@ export class UsersService {
 		});
 	}
 
-	update(_id: string, data: UpdateUserDto): Promise<[number, Users[]]> {
-		return this.usersModule.update(data, {
+	update(_id: string, user: UpdateUserDto): Promise<[number, Users[]]> {
+		return this.usersModule.update(user, {
 			where: {
 				_id,
 			},

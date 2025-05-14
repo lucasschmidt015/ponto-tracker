@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dtos/create-company.dto';
+import { UpdateCompanyDto } from './dtos/update-company.dto';
 
 @Controller('companies')
 export class CompaniesController {
@@ -16,31 +17,26 @@ export class CompaniesController {
 
 	@Get('/:id')
 	findOne(@Param('id') id: string) {
-		return '';
-		// return this.companiesService.findOne(id);
+		return this.companiesService.findOne(id);
 	}
 
 	@Get()
 	findAll() {
-		// return this.companiesService.findAll();
-		return '';
+		return this.companiesService.findAll();
 	}
 
 	@Post()
 	create(@Body() createCompany: CreateCompanyDto) {
-		console.log('createCompany <----- ', createCompany);
-		return '';
-		// return this.companiesService.create(createUser);
+		return this.companiesService.create(createCompany);
 	}
 
-	// @Patch('/:id')
-	// update(@Param('id') id: string, @Body() body: UpdateUserDto) {
-	// 	return this.companiesService.update(id, body);
-	// }
+	@Patch('/:id')
+	update(@Param('id') id: string, @Body() company: UpdateCompanyDto) {
+		return this.companiesService.update(id, company);
+	}
 
 	@Delete('/:id')
 	delete(@Param('id') id: string) {
-		return '';
-		// return this.companiesService.delete(id);
+		return this.companiesService.delete(id);
 	}
 }

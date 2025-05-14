@@ -1,19 +1,30 @@
-import { Column, Model, Table } from 'sequelize-typescript';
+import { Column, Model, Table, DataType } from 'sequelize-typescript';
 
 @Table
 export class Users extends Model {
-	@Column({ primaryKey: true })
+	@Column({
+		primaryKey: true,
+		type: DataType.STRING(36),
+	})
 	_id: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(255),
+	})
 	name: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(255),
+	})
 	email: string;
 
-	@Column
-	birthday_date: string;
+	@Column({
+		type: DataType.DATE,
+	})
+	birthday_date: Date;
 
-	@Column
+	@Column({
+		type: DataType.STRING(255),
+	})
 	password: string;
 }

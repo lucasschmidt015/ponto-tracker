@@ -2,41 +2,52 @@ import { Column, Model, Table, DataType } from 'sequelize-typescript';
 
 @Table
 export class Companies extends Model {
-	@Column({ primaryKey: true })
+	@Column({
+		primaryKey: true,
+		type: DataType.STRING(36),
+	})
 	_id: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(255),
+	})
 	name: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(255),
+	})
 	email: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(50),
+	})
 	latitude: string;
 
-	@Column
+	@Column({
+		type: DataType.STRING(50),
+	})
 	longitude: string;
 
 	@Column
 	allow_entry_out_range: boolean;
 
 	@Column({
-		type: DataType.DATE,
+		type: DataType.TIME,
 	})
 	start_time_morning: Date;
 
 	@Column({
-		type: DataType.DATE,
+		type: DataType.TIME,
 	})
 	start_time_afternoon: Date;
 
 	@Column({
-		type: DataType.DATE,
+		type: DataType.TIME,
 	})
 	end_time_morning: Date;
 
 	@Column({
-		type: DataType.DATE,
+		type: DataType.TIME,
 	})
 	end_time_afternoon: Date;
 }
