@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { Users } from './users.model';
 import { getModelToken } from '@nestjs/sequelize';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { ConflictException } from '@nestjs/common';
 
 describe('UsersService', () => {
@@ -88,6 +89,31 @@ describe('UsersService', () => {
 			await expect(usersService.create(newUserInput)).rejects.toThrow(
 				ConflictException,
 			);
+		});
+	});
+
+	describe('update', () => {
+		it('should update an user successfully', async () => {
+			const updateData: UpdateUserDto = {
+				name: 'Jão',
+				birthday_date: new Date().toString(),
+			};
+
+			mockSequelizeMethods.update.mockResolvedValue(updateData);
+
+			expect(await usersService.update('1', updateData)).toBe(updateData);
+			expect(mockSequelizeMethods.update).toHaveBeenCalled();
+		});
+	});
+
+	describe('delete', () => {
+		it('should delete an user successfully', async () => {
+			const result = 1;
+
+			mockSequelizeMethods.destroy.mockReturnValue(result);
+
+			expect(await usersService.delete('1')).toBe(result);
+			expect(mockSequelizeMethods.destroy).toHaveBeenCalled();
 		});
 	});
 });
