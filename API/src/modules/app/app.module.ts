@@ -8,6 +8,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthModule } from '../auth/auth.module';
 import { Users } from '../users/users.model';
 import { Companies } from '../companies/companies.model';
+import { JwtConfigModule } from '../common/jwt/jwt.module';
 
 @Module({
 	imports: [
@@ -15,6 +16,7 @@ import { Companies } from '../companies/companies.model';
 			...configs.db,
 			models: [Users, Companies],
 		}),
+		JwtConfigModule,
 		UsersModule,
 		CompaniesModule,
 		AuthModule,
