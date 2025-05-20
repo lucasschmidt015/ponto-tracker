@@ -19,6 +19,14 @@ export class UsersService {
 		});
 	}
 
+	findByEmail(email: string): Promise<Users | null> {
+		return this.usersModule.findOne({
+			where: {
+				email,
+			},
+		});
+	}
+
 	findAll(): Promise<Users[]> {
 		return this.usersModule.findAll({
 			attributes: { exclude: ['password'] },

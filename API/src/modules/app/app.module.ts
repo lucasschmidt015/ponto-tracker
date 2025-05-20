@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { AuthModule } from '../auth/auth.module';
 import { Users } from '../users/users.model';
 import { Companies } from '../companies/companies.model';
 
@@ -16,6 +17,7 @@ import { Companies } from '../companies/companies.model';
 		}),
 		UsersModule,
 		CompaniesModule,
+		AuthModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

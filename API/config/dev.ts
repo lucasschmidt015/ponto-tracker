@@ -14,6 +14,9 @@ const devConfig: AppConfig = {
 		synchronize: true,
 		logging: false,
 	},
+	auth: {
+		jwt_secret: process.env.JWT_SECRET || 'super_secret_jwt',
+	},
 };
 
 export default devConfig;
