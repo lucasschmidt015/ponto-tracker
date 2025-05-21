@@ -24,6 +24,7 @@ export class UsersService {
 			where: {
 				email,
 			},
+			raw: true,
 		});
 	}
 
