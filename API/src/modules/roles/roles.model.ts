@@ -2,7 +2,7 @@ import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
 import { UserRoles } from '../user-roles/user-roles.model';
 
 @Table
-export class Users extends Model {
+export class Roles extends Model {
 	@Column({
 		primaryKey: true,
 		type: DataType.STRING(36),
@@ -10,24 +10,9 @@ export class Users extends Model {
 	_id: string;
 
 	@Column({
-		type: DataType.STRING(255),
+		type: DataType.STRING(60),
 	})
 	name: string;
-
-	@Column({
-		type: DataType.STRING(255),
-	})
-	email: string;
-
-	@Column({
-		type: DataType.DATE,
-	})
-	birthday_date: Date;
-
-	@Column({
-		type: DataType.STRING(255),
-	})
-	password: string;
 
 	@HasMany(() => UserRoles)
 	userRoles: UserRoles[];
