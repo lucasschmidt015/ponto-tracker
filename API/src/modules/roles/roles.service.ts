@@ -4,6 +4,7 @@ import { Roles } from './roles.model';
 import { CreateRoleDto } from './dtos/create-role.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { ConflictException } from '@nestjs/common';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class RolesService {
@@ -40,8 +41,18 @@ export class RolesService {
 		});
 	}
 
-	update(_id: string, user: CreateRoleDto): Promise<[number, Roles[]]> {
-		return this.rolesModel.update(user, {
+	async update(_id: string, role: CreateRoleDto): Promise<[number, Roles[]]> {
+		const roleAlreadyExists = await this.rolesModel.findOne({
+			where: {
+				[Op.and]: [{ name: role.name }, { _id: { [Op.not]: _id } }],
+			},
+		});
+
+		if (roleAlreadyExists) {
+			throw new ConflictException('This role already exists.');
+		}
+
+		return this.rolesModel.update(role, {
 			where: {
 				_id,
 			},

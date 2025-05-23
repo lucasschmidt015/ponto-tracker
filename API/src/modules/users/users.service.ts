@@ -25,6 +25,12 @@ export class UsersService {
 				email,
 			},
 			raw: true,
+			include: [
+				{
+					association: 'userRoles',
+					include: ['role'],
+				},
+			],
 		});
 	}
 
