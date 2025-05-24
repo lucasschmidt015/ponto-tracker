@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Roles } from './roles.model';
 import { CreateRoleDto } from './dtos/create-role.dto';
@@ -10,12 +10,18 @@ import { Op } from 'sequelize';
 export class RolesService {
 	constructor(@InjectModel(Roles) private rolesModel: typeof Roles) {}
 
-	findOne(_id: string): Promise<Roles | null> {
-		return this.rolesModel.findOne({
+	async findOne(_id: string): Promise<Roles | null> {
+		const role = await this.rolesModel.findOne({
 			where: {
 				_id,
 			},
 		});
+
+		if (!role) {
+			throw new NotFoundException(`Role with ID ${_id} not found`);
+		}
+
+		return role;
 	}
 
 	findAll(): Promise<Roles[]> {

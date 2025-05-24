@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+	Injectable,
+	ConflictException,
+	NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { InjectModel } from '@nestjs/sequelize';
@@ -10,13 +14,19 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
 	constructor(@InjectModel(Users) private usersModule: typeof Users) {}
 
-	findOne(_id: string): Promise<Users | null> {
-		return this.usersModule.findOne({
+	async findOne(_id: string): Promise<Users | null> {
+		const user = await this.usersModule.findOne({
 			where: {
 				_id,
 			},
 			attributes: { exclude: ['password'] },
 		});
+
+		if (!user) {
+			throw new NotFoundException(`User with ID ${_id} not found`);
+		}
+
+		return user;
 	}
 
 	findByEmail(email: string): Promise<Users | null> {

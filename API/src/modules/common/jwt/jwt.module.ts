@@ -7,7 +7,7 @@ import configs from 'config';
 	imports: [
 		JwtModule.register({
 			secret: configs.auth.jwt_secret,
-			signOptions: { expiresIn: '60s' },
+			signOptions: { expiresIn: '10m' },
 		}),
 	],
 	exports: [JwtModule],
