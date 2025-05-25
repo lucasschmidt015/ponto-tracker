@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
 	Injectable,
 	ConflictException,
@@ -29,12 +30,11 @@ export class UsersService {
 		return user;
 	}
 
-	findByEmail(email: string): Promise<Users | null> {
-		return this.usersModule.findOne({
+	async findByEmail(email: string): Promise<Users | null> {
+		const user = await this.usersModule.findOne({
 			where: {
 				email,
 			},
-			raw: true,
 			include: [
 				{
 					association: 'userRoles',
@@ -42,6 +42,8 @@ export class UsersService {
 				},
 			],
 		});
+
+		return user?.get({ plain: true }) ?? null;
 	}
 
 	findAll(): Promise<Users[]> {

@@ -10,6 +10,7 @@ import {
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dtos/create-company.dto';
 import { UpdateCompanyDto } from './dtos/update-company.dto';
+import { Roles } from 'src/custom-decorators/roles';
 
 @Controller('companies')
 export class CompaniesController {
@@ -20,6 +21,7 @@ export class CompaniesController {
 		return this.companiesService.findOne(id);
 	}
 
+	@Roles('master')
 	@Get()
 	findAll() {
 		return this.companiesService.findAll();

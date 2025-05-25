@@ -29,7 +29,13 @@ export class AuthService {
 			throw new UnauthorizedException();
 		}
 
-		const payload = { sub: user._id, email: user.email };
+		const roles = user.userRoles?.map((ur) => ur.role?.name) ?? [];
+
+		const payload = {
+			sub: user._id,
+			email: user.email,
+			roles,
+		};
 
 		const token = await this.jwtService.signAsync(payload);
 
