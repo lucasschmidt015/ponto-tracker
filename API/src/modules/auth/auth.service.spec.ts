@@ -55,6 +55,7 @@ describe('AuthService', () => {
 				name: 'Lucas',
 				password: '123123',
 				email: 'teste@teste.com',
+				roles: [],
 			};
 			mocksUsersService.findByEmail.mockResolvedValue(user);
 			(bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -70,6 +71,7 @@ describe('AuthService', () => {
 			expect(mocksJwtService.signAsync).toHaveBeenCalledWith({
 				sub: user._id,
 				email: user.email,
+				roles: user.roles,
 			});
 		});
 
