@@ -10,10 +10,14 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Users } from './users.model';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
+import { CompaniesService } from '../companies/companies.service';
 
 @Injectable()
 export class UsersService {
-	constructor(@InjectModel(Users) private usersModule: typeof Users) {}
+	constructor(
+		@InjectModel(Users) private usersModule: typeof Users,
+		private companiesService: CompaniesService,
+	) {}
 
 	async findOne(_id: string): Promise<Users | null> {
 		const user = await this.usersModule.findOne({
@@ -65,6 +69,14 @@ export class UsersService {
 			throw new ConflictException('Email already in use');
 		}
 
+		const companyExists = await this.companiesService.findOne(user.company_id);
+
+		if (!companyExists) {
+			throw new NotFoundException(
+				`No company was found with the Id: ${user.company_id}`,
+			);
+		}
+
 		const hashedPassword = await bcrypt.hash(user.password, 10);
 
 		return this.usersModule.create({
@@ -74,7 +86,19 @@ export class UsersService {
 		});
 	}
 
-	update(_id: string, user: UpdateUserDto): Promise<[number, Users[]]> {
+	async update(_id: string, user: UpdateUserDto): Promise<[number, Users[]]> {
+		if (user.company_id) {
+			const companyExists = await this.companiesService.findOne(
+				user.company_id,
+			);
+
+			if (!companyExists) {
+				throw new NotFoundException(
+					`No company was found with the Id: ${user.company_id}`,
+				);
+			}
+		}
+
 		return this.usersModule.update(user, {
 			where: {
 				_id,

@@ -1,5 +1,14 @@
-import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
+import {
+	Column,
+	Model,
+	Table,
+	DataType,
+	HasMany,
+	ForeignKey,
+	BelongsTo,
+} from 'sequelize-typescript';
 import { UserRoles } from '../user-roles/user-roles.model';
+import { Companies } from '../companies/companies.model';
 
 @Table
 export class Users extends Model {
@@ -28,6 +37,16 @@ export class Users extends Model {
 		type: DataType.STRING(255),
 	})
 	password: string;
+
+	@ForeignKey(() => Companies)
+	@Column({
+		type: DataType.STRING(36),
+		allowNull: false,
+	})
+	company_id: string;
+
+	@BelongsTo(() => Companies)
+	company: Companies;
 
 	@HasMany(() => UserRoles)
 	userRoles: UserRoles[];

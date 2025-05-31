@@ -1,4 +1,5 @@
-import { Column, Model, Table, DataType } from 'sequelize-typescript';
+import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
+import { Users } from '../users/users.model';
 
 @Table
 export class Companies extends Model {
@@ -50,4 +51,7 @@ export class Companies extends Model {
 		type: DataType.TIME,
 	})
 	end_time_afternoon: Date;
+
+	@HasMany(() => Users)
+	users: Users[];
 }

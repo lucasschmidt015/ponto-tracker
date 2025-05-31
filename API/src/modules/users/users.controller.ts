@@ -10,8 +10,9 @@ import {
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
-import { Public } from 'src/custom-decorators/public';
+import { Roles } from 'src/custom-decorators/roles';
 
+@Roles('master')
 @Controller('users')
 export class UsersController {
 	constructor(private usersService: UsersService) {}
@@ -26,7 +27,6 @@ export class UsersController {
 		return this.usersService.findAll();
 	}
 
-	@Public()
 	@Post()
 	create(@Body() createUser: CreateUserDto) {
 		return this.usersService.create(createUser);

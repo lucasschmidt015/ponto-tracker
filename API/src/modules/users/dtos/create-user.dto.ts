@@ -1,4 +1,10 @@
-import { IsString, MinLength, IsEmail, IsDateString } from 'class-validator';
+import {
+	IsString,
+	MinLength,
+	IsEmail,
+	IsDateString,
+	IsUUID,
+} from 'class-validator';
 import { Match } from 'src/custom-validators/match.validator';
 
 export class CreateUserDto {
@@ -20,4 +26,7 @@ export class CreateUserDto {
 	@MinLength(5)
 	@Match('password', { message: 'Passwords do not match' })
 	password_confirmation: string;
+
+	@IsUUID()
+	company_id: string;
 }
