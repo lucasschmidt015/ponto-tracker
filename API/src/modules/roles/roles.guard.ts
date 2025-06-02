@@ -35,7 +35,7 @@ export class RolesGuard implements CanActivate {
 
 		if (!hasRole) {
 			throw new ForbiddenException(
-				'You do not the required permitions to access this feature',
+				'You do not have the required permissions to access this feature',
 			);
 		}
 
