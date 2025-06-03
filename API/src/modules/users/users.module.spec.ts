@@ -4,7 +4,7 @@ import { Users } from './users.model';
 import { getModelToken } from '@nestjs/sequelize';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CompaniesService } from '../companies/companies.service';
 
 describe('UsersService', () => {
@@ -79,10 +79,15 @@ describe('UsersService', () => {
 
 			mockSequelizeMethods.create.mockResolvedValue(createdUser);
 			mockSequelizeMethods.findOne.mockResolvedValue(undefined);
+			mockCompaniesService.findOne.mockResolvedValue({
+				_id: 123,
+				name: 'teste',
+			});
 
 			expect(await usersService.create(newUserInput)).toBe(createdUser);
 			expect(mockSequelizeMethods.findOne).toHaveBeenCalled();
 			expect(mockSequelizeMethods.create).toHaveBeenCalled();
+			expect(mockCompaniesService.findOne).toHaveBeenCalled();
 		});
 
 		it('should fail to create the user since the email already exists', async () => {
@@ -101,20 +106,67 @@ describe('UsersService', () => {
 				ConflictException,
 			);
 		});
+
+		it('should fail to create the user since the company was not found', async () => {
+			const newUserInput: CreateUserDto = {
+				name: 'Carlinhos',
+				birthday_date: new Date().toString(),
+				email: 'teste',
+				password: '11111',
+				password_confirmation: '11111',
+				company_id: '123123',
+			};
+			mockSequelizeMethods.create.mockResolvedValue(newUserInput);
+			mockSequelizeMethods.findOne.mockResolvedValue(undefined);
+			mockCompaniesService.findOne.mockResolvedValue(undefined);
+
+			await expect(usersService.create(newUserInput)).rejects.toThrow(
+				NotFoundException,
+			);
+		});
 	});
 
 	describe('update', () => {
 		it('should update an user successfully', async () => {
-			const updateData: UpdateUserDto = {
-				name: 'Jão',
+			const updateData = {
+				name: 'jão',
 				birthday_date: new Date().toString(),
-				company_id: '123123',
-			};
+			} as UpdateUserDto;
 
 			mockSequelizeMethods.update.mockResolvedValue(updateData);
 
 			expect(await usersService.update('1', updateData)).toBe(updateData);
 			expect(mockSequelizeMethods.update).toHaveBeenCalled();
+		});
+
+		it('updates the user when the associated company exists', async () => {
+			const updateData: UpdateUserDto = {
+				name: 'jão',
+				birthday_date: new Date().toString(),
+				company_id: '123',
+			};
+
+			mockCompaniesService.findOne.mockResolvedValue({
+				_id: '123',
+			});
+			mockSequelizeMethods.update.mockResolvedValue(updateData);
+			expect(await usersService.update('1', updateData)).toBe(updateData);
+			expect(mockSequelizeMethods.update).toHaveBeenCalled();
+			expect(mockCompaniesService.findOne).toHaveBeenCalled();
+		});
+
+		it('throws NotFoundException when trying to update a user with a non-existent company', async () => {
+			const updateData: UpdateUserDto = {
+				name: 'jão',
+				birthday_date: new Date().toString(),
+				company_id: '123',
+			};
+
+			mockCompaniesService.findOne.mockResolvedValue(undefined);
+			await expect(usersService.update('1', updateData)).rejects.toThrow(
+				NotFoundException,
+			);
+			expect(mockCompaniesService.findOne).toHaveBeenCalled();
 		});
 	});
 
