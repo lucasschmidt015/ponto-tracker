@@ -67,6 +67,7 @@ describe('UsersController', () => {
 				birthday_date: new Date().toString(),
 				password: '123456',
 				password_confirmation: '123456',
+				company_id: '123123',
 			};
 			const result = { ...dto, _id: 'abc123' };
 
@@ -82,6 +83,7 @@ describe('UsersController', () => {
 			const dto: UpdateUserDto = {
 				name: 'Updated Name',
 				birthday_date: new Date().toString(),
+				company_id: '123123',
 			};
 			const result = { _id: '1', name: 'Updated Name' };
 

@@ -5,6 +5,7 @@ import { getModelToken } from '@nestjs/sequelize';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ConflictException } from '@nestjs/common';
+import { CompaniesService } from '../companies/companies.service';
 
 describe('UsersService', () => {
 	let usersService: UsersService;
@@ -17,6 +18,10 @@ describe('UsersService', () => {
 		destroy: jest.fn(),
 	};
 
+	const mockCompaniesService = {
+		findOne: jest.fn(),
+	};
+
 	beforeEach(async () => {
 		const moduleRef = await Test.createTestingModule({
 			controllers: [],
@@ -25,6 +30,10 @@ describe('UsersService', () => {
 				{
 					provide: getModelToken(Users),
 					useValue: mockSequelizeMethods,
+				},
+				{
+					provide: CompaniesService,
+					useValue: mockCompaniesService,
 				},
 			],
 		}).compile();
@@ -60,6 +69,7 @@ describe('UsersService', () => {
 				email: 'teste',
 				password: '11111',
 				password_confirmation: '11111',
+				company_id: '123123',
 			};
 
 			const createdUser = {
@@ -82,6 +92,7 @@ describe('UsersService', () => {
 				email: 'teste',
 				password: '11111',
 				password_confirmation: '11111',
+				company_id: '123123',
 			};
 
 			mockSequelizeMethods.findOne.mockResolvedValue(true);
@@ -97,6 +108,7 @@ describe('UsersService', () => {
 			const updateData: UpdateUserDto = {
 				name: 'Jão',
 				birthday_date: new Date().toString(),
+				company_id: '123123',
 			};
 
 			mockSequelizeMethods.update.mockResolvedValue(updateData);
