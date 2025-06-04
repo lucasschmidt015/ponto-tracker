@@ -73,8 +73,13 @@ describe('UsersService', () => {
 			};
 
 			const createdUser = {
-				_id: '123',
-				...newUserInput,
+				get: () => {
+					const { password, ...userWithoutPassword } = {
+						_id: '123',
+						...newUserInput,
+					};
+					return userWithoutPassword;
+				},
 			};
 
 			mockSequelizeMethods.create.mockResolvedValue(createdUser);
@@ -84,7 +89,9 @@ describe('UsersService', () => {
 				name: 'teste',
 			});
 
-			expect(await usersService.create(newUserInput)).toBe(createdUser);
+			expect(await usersService.create(newUserInput)).toEqual(
+				createdUser.get(),
+			);
 			expect(mockSequelizeMethods.findOne).toHaveBeenCalled();
 			expect(mockSequelizeMethods.create).toHaveBeenCalled();
 			expect(mockCompaniesService.findOne).toHaveBeenCalled();

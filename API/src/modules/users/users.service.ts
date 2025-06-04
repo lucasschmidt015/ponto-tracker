@@ -47,6 +47,10 @@ export class UsersService {
 			],
 		});
 
+		if (!user) {
+			throw new NotFoundException(`User with email ${email} not found`);
+		}
+
 		return user?.get({ plain: true }) ?? null;
 	}
 
@@ -79,11 +83,17 @@ export class UsersService {
 
 		const hashedPassword = await bcrypt.hash(user.password, 10);
 
-		return this.usersModule.create({
+		const createdUser = await this.usersModule.create({
 			_id,
 			...user,
 			password: hashedPassword,
 		});
+
+		const plainUser = createdUser.get({ plain: true });
+
+		delete plainUser.password;
+
+		return plainUser;
 	}
 
 	async update(_id: string, user: UpdateUserDto): Promise<[number, Users[]]> {
