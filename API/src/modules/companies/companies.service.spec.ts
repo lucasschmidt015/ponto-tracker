@@ -2,7 +2,8 @@ import { Test } from '@nestjs/testing';
 import { CompaniesService } from './companies.service';
 import { getModelToken } from '@nestjs/sequelize';
 import { Companies } from './companies.model';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import DestroyedResponse from 'src/types/delete.response';
 
 describe('CompaniesService', () => {
 	let service: CompaniesService;
@@ -13,6 +14,7 @@ describe('CompaniesService', () => {
 		create: jest.fn(),
 		update: jest.fn(),
 		destroy: jest.fn(),
+		findByPk: jest.fn(),
 	};
 
 	beforeEach(async () => {
@@ -95,14 +97,31 @@ describe('CompaniesService', () => {
 	});
 
 	describe('delete', () => {
-		it('should delete a company and return the number of rows affected', async () => {
+		it('should delete a company successfully', async () => {
+			const _id = '1';
 			mockCompaniesModel.destroy.mockResolvedValue(1);
+			mockCompaniesModel.findByPk.mockResolvedValue(true);
 
-			const result = await service.delete('1');
-			expect(result).toBe(1);
+			const expectedResult: DestroyedResponse = {
+				_id,
+				message: `Company with id ${_id} successfully deleted`,
+				success: 1,
+			};
+
+			const result = await service.delete(_id);
+			expect(result).toEqual(expectedResult);
 			expect(mockCompaniesModel.destroy).toHaveBeenCalledWith({
-				where: { _id: '1' },
+				where: { _id },
 			});
+			expect(mockCompaniesModel.findByPk).toHaveBeenCalledWith(_id);
+		});
+
+		it('should throw a NotFoundException since the company was not found', async () => {
+			const _id = '1';
+			mockCompaniesModel.findByPk.mockResolvedValue(false);
+
+			await expect(service.delete(_id)).rejects.toThrow(NotFoundException);
+			expect(mockCompaniesModel.findByPk).toHaveBeenCalled();
 		});
 	});
 });

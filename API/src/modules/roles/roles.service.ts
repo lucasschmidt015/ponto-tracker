@@ -5,6 +5,7 @@ import { CreateRoleDto } from './dtos/create-role.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { ConflictException } from '@nestjs/common';
 import { Op } from 'sequelize';
+import DestroyedResponse from 'src/types/delete.response';
 
 @Injectable()
 export class RolesService {
@@ -66,11 +67,22 @@ export class RolesService {
 		});
 	}
 
-	delete(_id: string): Promise<number> {
-		return this.rolesModel.destroy({
+	async delete(_id: string): Promise<DestroyedResponse> {
+		const roleExists = await this.rolesModel.findByPk(_id);
+
+		if (!roleExists) {
+			throw new NotFoundException(`No role was found with id ${_id}`);
+		}
+
+		const hasDestroyed = await this.rolesModel.destroy({
 			where: {
 				_id,
 			},
 		});
+		return {
+			_id,
+			message: `Role with id ${_id} successfully deleted`,
+			success: hasDestroyed,
+		};
 	}
 }

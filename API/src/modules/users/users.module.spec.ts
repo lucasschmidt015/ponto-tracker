@@ -6,6 +6,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CompaniesService } from '../companies/companies.service';
+import DestroyedResponse from 'src/types/delete.response';
 
 describe('UsersService', () => {
 	let usersService: UsersService;
@@ -16,6 +17,7 @@ describe('UsersService', () => {
 		create: jest.fn(),
 		update: jest.fn(),
 		destroy: jest.fn(),
+		findByPk: jest.fn(),
 	};
 
 	const mockCompaniesService = {
@@ -39,6 +41,7 @@ describe('UsersService', () => {
 		}).compile();
 
 		usersService = moduleRef.get(UsersService);
+		jest.clearAllMocks();
 	});
 
 	describe('findAll', () => {
@@ -141,9 +144,11 @@ describe('UsersService', () => {
 			} as UpdateUserDto;
 
 			mockSequelizeMethods.update.mockResolvedValue(updateData);
+			mockSequelizeMethods.findOne.mockResolvedValue(true);
 
 			expect(await usersService.update('1', updateData)).toBe(updateData);
 			expect(mockSequelizeMethods.update).toHaveBeenCalled();
+			expect(mockSequelizeMethods.findOne).toHaveBeenCalled();
 		});
 
 		it('updates the user when the associated company exists', async () => {
@@ -175,16 +180,49 @@ describe('UsersService', () => {
 			);
 			expect(mockCompaniesService.findOne).toHaveBeenCalled();
 		});
+
+		it('throws NotFoundException when trying to update a user with a invalid id', async () => {
+			const updateData: UpdateUserDto = {
+				name: 'jão',
+				birthday_date: new Date().toString(),
+				company_id: '123',
+			};
+
+			mockCompaniesService.findOne.mockResolvedValue(true);
+			mockSequelizeMethods.findOne.mockResolvedValue(false);
+
+			await expect(usersService.update('1', updateData)).rejects.toThrow(
+				NotFoundException,
+			);
+			expect(mockSequelizeMethods.findOne).toHaveBeenCalled();
+		});
 	});
 
 	describe('delete', () => {
 		it('should delete an user successfully', async () => {
-			const result = 1;
+			const _id = '1';
+			const result: DestroyedResponse = {
+				_id,
+				message: `User with id ${_id} successfully deleted`,
+				success: 1,
+			};
 
-			mockSequelizeMethods.destroy.mockReturnValue(result);
+			mockSequelizeMethods.destroy.mockReturnValue(1);
+			mockSequelizeMethods.findByPk.mockResolvedValue(true);
 
-			expect(await usersService.delete('1')).toBe(result);
+			expect(await usersService.delete(_id)).toEqual(result);
 			expect(mockSequelizeMethods.destroy).toHaveBeenCalled();
+			expect(mockSequelizeMethods.findByPk).toHaveBeenCalled();
+		});
+
+		it('should throw NotFoundException when the user does not exist', async () => {
+			const _id = 'nonexistent-id';
+
+			mockSequelizeMethods.findByPk.mockResolvedValue(null);
+
+			await expect(usersService.delete(_id)).rejects.toThrow(NotFoundException);
+			expect(mockSequelizeMethods.findByPk).toHaveBeenCalledWith(_id);
+			expect(mockSequelizeMethods.destroy).not.toHaveBeenCalled();
 		});
 	});
 });

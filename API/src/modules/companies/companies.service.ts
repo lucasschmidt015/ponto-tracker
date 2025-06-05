@@ -1,9 +1,14 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+	Injectable,
+	ConflictException,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Companies } from './companies.model';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateCompanyDto } from './dtos/create-company.dto';
 import { UpdateCompanyDto } from './dtos/update-company.dto';
+import DestroyedResponse from 'src/types/delete.response';
 
 @Injectable()
 export class CompaniesService {
@@ -54,11 +59,23 @@ export class CompaniesService {
 		});
 	}
 
-	delete(_id: string) {
-		return this.companiesModule.destroy({
+	async delete(_id: string): Promise<DestroyedResponse> {
+		const companyExists = await this.companiesModule.findByPk(_id);
+
+		if (!companyExists) {
+			throw new NotFoundException(`No company was found with id ${_id}`);
+		}
+
+		const hasDestroyed = await this.companiesModule.destroy({
 			where: {
 				_id,
 			},
 		});
+
+		return {
+			_id,
+			message: `Company with id ${_id} successfully deleted`,
+			success: hasDestroyed,
+		};
 	}
 }
