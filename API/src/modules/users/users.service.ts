@@ -11,6 +11,7 @@ import { Users } from './users.model';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { CompaniesService } from '../companies/companies.service';
+import DestroyedResponse from 'src/types/delete.response';
 
 @Injectable()
 export class UsersService {
@@ -109,6 +110,16 @@ export class UsersService {
 			}
 		}
 
+		const userExists = await this.usersModule.findOne({
+			where: {
+				_id,
+			},
+		});
+
+		if (!userExists) {
+			throw new NotFoundException(`User with ID ${_id} not found`);
+		}
+
 		return this.usersModule.update(user, {
 			where: {
 				_id,
@@ -117,11 +128,23 @@ export class UsersService {
 		});
 	}
 
-	delete(_id: string): Promise<number> {
-		return this.usersModule.destroy({
+	async delete(_id: string): Promise<DestroyedResponse> {
+		const userExists = await this.usersModule.findByPk(_id);
+
+		if (!userExists) {
+			throw new NotFoundException(`User with ID ${_id} not found`);
+		}
+
+		const hasDestroyed = await this.usersModule.destroy({
 			where: {
 				_id,
 			},
 		});
+
+		return {
+			_id,
+			message: `User with id ${_id} successfully deleted`,
+			success: hasDestroyed,
+		};
 	}
 }
