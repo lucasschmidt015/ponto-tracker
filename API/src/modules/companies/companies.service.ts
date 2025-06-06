@@ -16,12 +16,18 @@ export class CompaniesService {
 		@InjectModel(Companies) private companiesModule: typeof Companies,
 	) {}
 
-	findOne(_id: string): Promise<Companies | null> {
-		return this.companiesModule.findOne({
+	async findOne(_id: string): Promise<Companies | null> {
+		const company = await this.companiesModule.findOne({
 			where: {
 				_id,
 			},
 		});
+
+		if (!company) {
+			throw new NotFoundException(`Company with ID ${_id} not found`);
+		}
+
+		return company;
 	}
 
 	findAll(): Promise<Companies[]> {

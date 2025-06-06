@@ -43,6 +43,13 @@ describe('CompaniesService', () => {
 				where: { _id: '1' },
 			});
 		});
+
+		it('Should throw a not found exception since the company does not exist', async () => {
+			mockCompaniesModel.findOne.mockResolvedValue(null);
+
+			await expect(service.findOne('1')).rejects.toThrow(NotFoundException);
+			expect(mockCompaniesModel.findOne).toHaveBeenCalled();
+		});
 	});
 
 	describe('findAll', () => {
