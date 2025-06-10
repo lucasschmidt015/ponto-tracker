@@ -19,6 +19,8 @@ import { Companies } from '../companies/companies.model';
 import { Users } from '../users/users.model';
 import { Roles } from '../roles/roles.model';
 import { UserRoles } from '../user-roles/user-roles.model';
+import { WorkingDays } from '../working-days/working-days.model';
+import { Entries } from '../entries/entries.model';
 
 //Guards
 import { AuthGuard } from '../auth/auth.guard';
@@ -32,7 +34,7 @@ import { AppService } from './app.service';
 	imports: [
 		SequelizeModule.forRoot({
 			...configs.db,
-			models: [Users, Companies, Roles, UserRoles],
+			models: [Users, Companies, Roles, UserRoles, WorkingDays, Entries],
 		}),
 		JwtConfigModule,
 		AuthModule,
