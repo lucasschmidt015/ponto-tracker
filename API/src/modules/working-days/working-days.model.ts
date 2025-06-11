@@ -26,9 +26,10 @@ export class WorkingDays extends Model {
 	worked_time: number;
 
 	@Column({
-		type: DataType.BOOLEAN,
+		type: DataType.DATEONLY,
+		allowNull: false,
 	})
-	is_approved: boolean;
+	worked_date: Date;
 
 	@ForeignKey(() => Users)
 	@Column({

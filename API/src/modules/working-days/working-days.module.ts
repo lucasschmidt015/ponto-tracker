@@ -1,11 +1,20 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
+import { UsersModule } from '../users/users.module';
+import { CompaniesModule } from '../companies/companies.module';
+import { WorkingDaysController } from './working-days.controller';
+
 import { WorkingDaysService } from './working-days.service';
 import { WorkingDays } from './working-days.model';
 
 @Module({
-	imports: [SequelizeModule.forFeature([WorkingDays])],
+	imports: [
+		SequelizeModule.forFeature([WorkingDays]),
+		UsersModule,
+		CompaniesModule,
+	],
+	controllers: [WorkingDaysController],
 	providers: [WorkingDaysService],
 })
 export class WorkingDaysModule {}
