@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
+
 import { WorkingDays } from './working-days.model';
-import { CreateWorkingDayToUserDto } from './dto/create-working-day-user.dto';
+
 import { UsersService } from '../users/users.service';
 import { CompaniesService } from '../companies/companies.service';
-import { v4 as uuidv4 } from 'uuid';
-import { Op } from 'sequelize';
+
+import { CreateWorkingDayToUserDto } from './dto/create-working-day-user.dto';
 import { ListAllWorkingDaysDto } from './dto/list-working-days.dto';
+import { UpdateWorkingDayTimeDto } from './dto/update-working-day-time.dto';
 
 @Injectable()
 export class WorkingDaysService {
@@ -28,15 +32,15 @@ export class WorkingDaysService {
 		}
 
 		if (startDate && endDate) {
-			where.createdAt = {
+			where.worked_date = {
 				[Op.between]: [startDate, endDate],
 			};
 		} else if (startDate) {
-			where.createdAt = {
+			where.worked_date = {
 				[Op.gte]: startDate,
 			};
 		} else if (endDate) {
-			where.createdAt = {
+			where.worked_date = {
 				[Op.lte]: endDate,
 			};
 		}
@@ -69,8 +73,16 @@ export class WorkingDaysService {
 
 		const _id = uuidv4();
 
-		console.log('userId: ', user.dataValues._id);
-		console.log('companyId: ', company.dataValues._id);
+		const workingDayAlreadyExists = await this.workingDays.findOne({
+			where: {
+				user_id: workingDay.user_id,
+				worked_date: workingDay.worked_date,
+			},
+		});
+
+		if (workingDayAlreadyExists) {
+			return workingDayAlreadyExists;
+		}
 
 		const createdWorkingDay = await this.workingDays.create({
 			_id,
@@ -82,4 +94,6 @@ export class WorkingDaysService {
 
 		return createdWorkingDay;
 	}
+
+	async updateWorkedTime(updateWorkingDay: UpdateWorkingDayTimeDto) {}
 }

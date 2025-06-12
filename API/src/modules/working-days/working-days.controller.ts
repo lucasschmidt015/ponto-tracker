@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { WorkingDaysService } from './working-days.service';
 import { ListAllWorkingDaysDto } from './dto/list-working-days.dto';
 import { CreateWorkingDayToUserDto } from './dto/create-working-day-user.dto';
@@ -8,7 +8,7 @@ export class WorkingDaysController {
 	constructor(private workingDaysService: WorkingDaysService) {}
 
 	@Get()
-	listWorkingDays(@Param() filters: ListAllWorkingDaysDto) {
+	listWorkingDays(@Query() filters: ListAllWorkingDaysDto) {
 		return this.workingDaysService.listWorkingDays(filters);
 	}
 

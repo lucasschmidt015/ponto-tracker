@@ -6,8 +6,8 @@ export class ListAllWorkingDaysDto {
 	user_id: string;
 
 	@IsOptional()
-	startDate: Date;
+	startDate: string;
 
 	@IsOptional()
-	endDate: Date;
+	endDate: string;
 }
