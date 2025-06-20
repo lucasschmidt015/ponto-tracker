@@ -7,6 +7,8 @@ import {
 	BelongsTo,
 } from 'sequelize-typescript';
 
+import { Users } from '../users/users.model';
+
 import { WorkingDays } from '../working-days/working-days.model';
 
 @Table
@@ -17,11 +19,18 @@ export class Entries extends Model {
 	})
 	_id: string;
 
+	//This field will store both the date and the time
 	@Column({
-		type: DataType.TIME,
+		type: DataType.DATE,
 		allowNull: false,
 	})
 	entry_time: string;
+
+	@Column({
+		type: DataType.BOOLEAN,
+		defaultValue: false,
+	})
+	is_approved: boolean;
 
 	@Column({
 		type: DataType.STRING(50),
@@ -42,4 +51,24 @@ export class Entries extends Model {
 
 	@BelongsTo(() => WorkingDays)
 	working_day: WorkingDays;
+
+	@ForeignKey(() => Users)
+	@Column({
+		type: DataType.STRING(36),
+		allowNull: false,
+	})
+	user_id: string;
+
+	@BelongsTo(() => Users, { foreignKey: 'user_id' })
+	user: Users;
+
+	@ForeignKey(() => Users)
+	@Column({
+		type: DataType.STRING(36),
+		allowNull: true,
+	})
+	approved_by: string;
+
+	@BelongsTo(() => Users, { foreignKey: 'approved_by' })
+	approved_by_user: Users;
 }

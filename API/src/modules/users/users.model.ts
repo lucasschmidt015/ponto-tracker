@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { UserRoles } from '../user-roles/user-roles.model';
 import { Companies } from '../companies/companies.model';
+import { Entries } from '../entries/entries.model';
 
 @Table
 export class Users extends Model {
@@ -50,4 +51,10 @@ export class Users extends Model {
 
 	@HasMany(() => UserRoles)
 	userRoles: UserRoles[];
+
+	@HasMany(() => Entries, { foreignKey: 'user_id' })
+	entries: Entries[];
+
+	@HasMany(() => Entries, { foreignKey: 'approved_by' })
+	approvedEntries: Entries[];
 }

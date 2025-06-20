@@ -55,28 +55,18 @@ export class WorkingDaysService {
 	async createWorkingDayToUser(
 		workingDay: CreateWorkingDayToUserDto,
 	): Promise<WorkingDays> {
-		const user = await this.usersService.findOne(workingDay.user_id);
+		const { user_id, company_id, worked_date } = workingDay;
 
-		if (!user) {
-			throw new NotFoundException(
-				`The user with id ${workingDay.user_id} was not found`,
-			);
-		}
+		await this.usersService.findOne(user_id);
 
-		const company = await this.companiesService.findOne(workingDay.company_id);
-
-		if (!company) {
-			throw new NotFoundException(
-				`The company with id ${workingDay.company_id} was not found.`,
-			);
-		}
+		await this.companiesService.findOne(company_id);
 
 		const _id = uuidv4();
 
 		const workingDayAlreadyExists = await this.workingDays.findOne({
 			where: {
-				user_id: workingDay.user_id,
-				worked_date: workingDay.worked_date,
+				user_id,
+				worked_date,
 			},
 		});
 
@@ -87,9 +77,9 @@ export class WorkingDaysService {
 		const createdWorkingDay = await this.workingDays.create({
 			_id,
 			worked_time: 0,
-			user_id: user.dataValues._id,
-			company_id: company.dataValues._id,
-			worked_date: workingDay.worked_date,
+			user_id,
+			company_id,
+			worked_date,
 		});
 
 		return createdWorkingDay;

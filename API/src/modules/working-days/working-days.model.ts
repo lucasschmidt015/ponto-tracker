@@ -20,6 +20,7 @@ export class WorkingDays extends Model {
 	})
 	_id: string;
 
+	//This stores how much time the user worked on a day
 	@Column({
 		type: DataType.INTEGER,
 	})
@@ -30,6 +31,13 @@ export class WorkingDays extends Model {
 		allowNull: false,
 	})
 	worked_date: Date;
+
+	@Column({
+		type: DataType.BOOLEAN,
+		allowNull: false,
+		defaultValue: false,
+	})
+	finished: boolean;
 
 	@ForeignKey(() => Users)
 	@Column({
