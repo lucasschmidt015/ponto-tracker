@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,11 +25,13 @@ export class WorkingDaysService {
 	): Promise<WorkingDays[] | []> {
 		const { user_id, startDate, endDate } = filter;
 
+		if (!user_id) {
+			throw new BadRequestException('user_id is required');
+		}
+
 		const where: any = {};
 
-		if (user_id) {
-			where.user_id = user_id;
-		}
+		where.user_id = user_id;
 
 		if (startDate && endDate) {
 			where.worked_date = {

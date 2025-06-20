@@ -8,6 +8,7 @@ import { UserOwnsResourceGuard } from 'src/reusable-guards/user-owns-resource.gu
 export class WorkingDaysController {
 	constructor(private workingDaysService: WorkingDaysService) {}
 
+	@UseGuards(UserOwnsResourceGuard('user_id', 'query'))
 	@Get()
 	listWorkingDays(@Query() filters: ListAllWorkingDaysDto) {
 		return this.workingDaysService.listWorkingDays(filters);

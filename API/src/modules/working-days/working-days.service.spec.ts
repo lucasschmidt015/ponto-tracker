@@ -4,7 +4,7 @@ import { getModelToken } from '@nestjs/sequelize';
 import { WorkingDays } from './working-days.model';
 import { UsersService } from '../users/users.service';
 import { CompaniesService } from '../companies/companies.service';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ListAllWorkingDaysDto } from './dto/list-working-days.dto';
 
 describe('WorkingDaysService', () => {
@@ -121,10 +121,16 @@ describe('WorkingDaysService', () => {
 		it('should return empty array if no data found', async () => {
 			mockSequelizeMethods.findAll.mockResolvedValue(null);
 
-			const result = await workingDaysService.listWorkingDays(
-				{} as ListAllWorkingDaysDto,
-			);
+			const result = await workingDaysService.listWorkingDays({
+				user_id: 'user-1',
+			} as ListAllWorkingDaysDto);
 			expect(result).toEqual([]);
+		});
+
+		it('should throw an error if the user_id was not provided', async () => {
+			await expect(
+				workingDaysService.listWorkingDays({} as ListAllWorkingDaysDto),
+			).rejects.toThrow(BadRequestException);
 		});
 	});
 });
