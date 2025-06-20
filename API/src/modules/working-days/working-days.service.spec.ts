@@ -57,7 +57,9 @@ describe('WorkingDaysService', () => {
 		};
 
 		it('should throw if user not found', async () => {
-			mockUsersService.findOne.mockResolvedValue(null);
+			mockUsersService.findOne.mockImplementation(() => {
+				throw new NotFoundException();
+			});
 
 			await expect(
 				workingDaysService.createWorkingDayToUser(dto),
@@ -66,7 +68,9 @@ describe('WorkingDaysService', () => {
 
 		it('should throw if company not found', async () => {
 			mockUsersService.findOne.mockResolvedValue(user);
-			mockCompaniesService.findOne.mockResolvedValue(null);
+			mockCompaniesService.findOne.mockImplementation(() => {
+				throw new NotFoundException();
+			});
 
 			await expect(
 				workingDaysService.createWorkingDayToUser(dto),
