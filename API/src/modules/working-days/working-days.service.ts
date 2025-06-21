@@ -87,5 +87,7 @@ export class WorkingDaysService {
 		return createdWorkingDay;
 	}
 
-	async updateWorkedTime(updateWorkingDay: UpdateWorkingDayTimeDto) {}
+	async finishOngoingWorkingDays() {
+		console.log('ta funcionando <---------');
+	}
 }

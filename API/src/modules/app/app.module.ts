@@ -3,6 +3,7 @@ import configs from 'config';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ScheduleModule } from '@nestjs/schedule';
 
 //Modules
 import { AuthModule } from '../auth/auth.module';
@@ -36,6 +37,7 @@ import { AppService } from './app.service';
 			...configs.db,
 			models: [Users, Companies, Roles, UserRoles, WorkingDays, Entries],
 		}),
+		ScheduleModule.forRoot(),
 		JwtConfigModule,
 		AuthModule,
 		UsersModule,
