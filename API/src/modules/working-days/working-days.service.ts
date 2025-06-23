@@ -10,7 +10,6 @@ import { CompaniesService } from '../companies/companies.service';
 
 import { CreateWorkingDayToUserDto } from './dto/create-working-day-user.dto';
 import { ListAllWorkingDaysDto } from './dto/list-working-days.dto';
-import { UpdateWorkingDayTimeDto } from './dto/update-working-day-time.dto';
 
 @Injectable()
 export class WorkingDaysService {
@@ -87,7 +86,22 @@ export class WorkingDaysService {
 		return createdWorkingDay;
 	}
 
+	// To finish this method implementation, we first need to implement the entries logic
+	// After that we can Calculate the worked time and update at the field
 	async finishOngoingWorkingDays() {
-		console.log('ta funcionando <---------');
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		await this.workingDays.update(
+			{ finished: true },
+			{
+				where: {
+					finished: false,
+					worked_date: {
+						[Op.lt]: today,
+					},
+				},
+			},
+		);
 	}
 }
