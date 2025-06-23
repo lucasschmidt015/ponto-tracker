@@ -1,6 +1,6 @@
-import { IsUUID, IsDateString } from 'class-validator';
+import { IsUUID, IsOptional, IsString } from 'class-validator';
 
-export class CreateWorkingDayToUserDto {
+export class RegisterNewEntryDto {
 	//Yes, I know I could simply extract the user_id from the request, since we attach a user object during authentication. However, my goal was to practise using guards.
 	@IsUUID()
 	user_id: string;
@@ -8,6 +8,11 @@ export class CreateWorkingDayToUserDto {
 	@IsUUID()
 	company_id: string;
 
-	@IsDateString()
-	worked_date: string;
+	@IsOptional()
+	@IsString()
+	latitude?: string;
+
+	@IsOptional()
+	@IsString()
+	longitude?: string;
 }

@@ -68,6 +68,7 @@ export class WorkingDaysService {
 			where: {
 				user_id,
 				worked_date,
+				finished: false,
 			},
 		});
 

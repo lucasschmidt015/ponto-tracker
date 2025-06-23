@@ -16,5 +16,6 @@ import { WorkingDays } from './working-days.model';
 	],
 	controllers: [WorkingDaysController],
 	providers: [WorkingDaysService, WorkingDaysScheduler],
+	exports: [WorkingDaysService],
 })
 export class WorkingDaysModule {}
