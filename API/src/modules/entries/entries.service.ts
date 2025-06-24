@@ -52,9 +52,9 @@ export class EntriesService {
 		}
 
 		if (
-			company.dataValues.allow_entry_out_range ||
-			!company.dataValues.latitude ||
-			!company.dataValues.longitude
+			company.allow_entry_out_range ||
+			!company.latitude ||
+			!company.longitude
 		) {
 			return true;
 		}
@@ -66,13 +66,13 @@ export class EntriesService {
 		const distance = this.calculateDistanceInMeters(
 			parseFloat(latitude),
 			parseFloat(longitude),
-			parseFloat(company.dataValues.latitude),
-			parseFloat(company.dataValues.longitude),
+			parseFloat(company.latitude),
+			parseFloat(company.longitude),
 		);
 
 		const defaultRegisterRangeMeters = 300;
-		const MAX_ALLOWED_DISTANCE = company.dataValues.register_range_meters
-			? company.dataValues.register_range_meters
+		const MAX_ALLOWED_DISTANCE = company.register_range_meters
+			? company.register_range_meters
 			: defaultRegisterRangeMeters;
 
 		return distance <= MAX_ALLOWED_DISTANCE;

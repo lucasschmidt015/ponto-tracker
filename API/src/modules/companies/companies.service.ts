@@ -27,7 +27,7 @@ export class CompaniesService {
 			throw new NotFoundException(`Company with ID ${_id} not found`);
 		}
 
-		return company;
+		return company.get({ plain: true }) as Companies;
 	}
 
 	findAll(): Promise<Companies[]> {

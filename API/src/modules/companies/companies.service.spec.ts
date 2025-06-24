@@ -35,13 +35,18 @@ describe('CompaniesService', () => {
 
 	describe('findOne', () => {
 		it('should return a company by id', async () => {
-			const result = { _id: '1', name: 'Company A' };
+			const mockGet = jest
+				.fn()
+				.mockReturnValue({ _id: '1', name: 'Company A' });
+			const result = { get: mockGet };
 			mockCompaniesModel.findOne.mockResolvedValue(result);
 
-			expect(await service.findOne('1')).toBe(result);
+			const found = await service.findOne('1');
+			expect(found).toEqual({ _id: '1', name: 'Company A' });
 			expect(mockCompaniesModel.findOne).toHaveBeenCalledWith({
 				where: { _id: '1' },
 			});
+			expect(mockGet).toHaveBeenCalledWith({ plain: true });
 		});
 
 		it('Should throw a not found exception since the company does not exist', async () => {
@@ -64,22 +69,36 @@ describe('CompaniesService', () => {
 
 	describe('create', () => {
 		it('should throw ConflictException if company email already exists', async () => {
-			const dto = { name: 'New Co', email: 'existing@email.com' };
+			const dto: import('./dtos/create-company.dto').CreateCompanyDto = {
+				name: 'New Co',
+				email: 'existing@email.com',
+				start_time_morning: '',
+				start_time_afternoon: '',
+				end_time_morning: '',
+				end_time_afternoon: '',
+				allow_entry_out_range: false,
+			};
 			mockCompaniesModel.findOne.mockResolvedValue({ _id: 'x' });
 
-			await expect(service.create(dto as any)).rejects.toThrow(
-				ConflictException,
-			);
+			await expect(service.create(dto)).rejects.toThrow(ConflictException);
 		});
 
 		it('should create and return a new company', async () => {
-			const dto = { name: 'New Co', email: 'new@email.com' };
+			const dto: import('./dtos/create-company.dto').CreateCompanyDto = {
+				name: 'New Co',
+				email: 'new@email.com',
+				start_time_morning: '',
+				start_time_afternoon: '',
+				end_time_morning: '',
+				end_time_afternoon: '',
+				allow_entry_out_range: false,
+			};
 			const createdCompany = { _id: 'uuid', ...dto };
 
 			mockCompaniesModel.findOne.mockResolvedValue(null);
 			mockCompaniesModel.create.mockResolvedValue(createdCompany);
 
-			const result = await service.create(dto as any);
+			const result = await service.create(dto);
 			expect(result).toBe(createdCompany);
 			expect(mockCompaniesModel.create).toHaveBeenCalledWith(
 				expect.objectContaining(dto),
@@ -89,12 +108,19 @@ describe('CompaniesService', () => {
 
 	describe('update', () => {
 		it('should update and return affected count and updated companies', async () => {
-			const dto = { name: 'Updated Co' };
+			const dto: import('./dtos/update-company.dto').UpdateCompanyDto = {
+				name: 'Updated Co',
+				start_time_morning: '',
+				start_time_afternoon: '',
+				end_time_morning: '',
+				end_time_afternoon: '',
+				allow_entry_out_range: false,
+			};
 			const updated = [1, [{ _id: '1', ...dto }]];
 
 			mockCompaniesModel.update.mockResolvedValue(updated as any);
 
-			const result = await service.update('1', dto as any);
+			const result = await service.update('1', dto);
 			expect(result).toBe(updated);
 			expect(mockCompaniesModel.update).toHaveBeenCalledWith(dto, {
 				where: { _id: '1' },
