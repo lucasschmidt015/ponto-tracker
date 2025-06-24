@@ -42,8 +42,8 @@ export class EntriesService {
 
 	async validadeEntryLocation(
 		company_id: string,
-		latitude: string,
-		longitude: string,
+		latitude: string | undefined,
+		longitude: string | undefined,
 	): Promise<boolean> {
 		const company = await this.companies.findOne(company_id);
 
@@ -52,21 +52,28 @@ export class EntriesService {
 		}
 
 		if (
-			company.allow_entry_out_range ||
-			!company.latitude ||
-			!company.longitude
+			company.dataValues.allow_entry_out_range ||
+			!company.dataValues.latitude ||
+			!company.dataValues.longitude
 		) {
 			return true;
+		}
+
+		if (!latitude || !longitude) {
+			return false;
 		}
 
 		const distance = this.calculateDistanceInMeters(
 			parseFloat(latitude),
 			parseFloat(longitude),
-			parseFloat(company.latitude),
-			parseFloat(company.longitude),
+			parseFloat(company.dataValues.latitude),
+			parseFloat(company.dataValues.longitude),
 		);
 
-		const MAX_ALLOWED_DISTANCE = 300;
+		const defaultRegisterRangeMeters = 300;
+		const MAX_ALLOWED_DISTANCE = company.dataValues.register_range_meters
+			? company.dataValues.register_range_meters
+			: defaultRegisterRangeMeters;
 
 		return distance <= MAX_ALLOWED_DISTANCE;
 	}
@@ -81,6 +88,14 @@ export class EntriesService {
 				worked_date: today.toDateString(),
 			});
 
+		const validLocation: boolean = await this.validadeEntryLocation(
+			entry.company_id,
+			entry.latitude,
+			entry.longitude,
+		);
+
+		// If the location is not valid, we need to create a record in the new table to controll it <---
+
 		const _id = uuidv4();
 
 		const newEntry = await this.entries.create({
@@ -90,7 +105,7 @@ export class EntriesService {
 			entry_time: new Date(),
 			latitude: entry.latitude || null,
 			longitude: entry.longitude || null,
-			is_approved: false,
+			is_approved: validLocation,
 		});
 
 		return newEntry;
