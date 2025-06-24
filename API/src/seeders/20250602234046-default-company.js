@@ -15,6 +15,7 @@ module.exports = {
         end_time_morning: '12:00:00',
         start_time_afternoon: '13:00:00',
         end_time_afternoon: '17:00:00',
+        register_range_meters: 200,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

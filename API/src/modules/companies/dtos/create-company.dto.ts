@@ -5,6 +5,7 @@ import {
 	IsBoolean,
 	IsOptional,
 	Matches,
+	IsNumber,
 } from 'class-validator';
 
 export class CreateCompanyDto {
@@ -46,4 +47,8 @@ export class CreateCompanyDto {
 		message: 'end_time_afternoon must be in the format HH:mm (e.g. 17:30)',
 	})
 	end_time_afternoon: string;
+
+	@IsOptional()
+	@IsNumber()
+	register_range_meters?: number;
 }

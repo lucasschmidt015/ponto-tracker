@@ -52,6 +52,11 @@ export class Companies extends Model {
 	})
 	end_time_afternoon: Date;
 
+	@Column({
+		type: DataType.INTEGER,
+	})
+	register_range_meters: number;
+
 	@HasMany(() => Users)
 	users: Users[];
 }
