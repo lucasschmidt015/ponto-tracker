@@ -10,6 +10,7 @@ import {
 import { UserRoles } from '../user-roles/user-roles.model';
 import { Companies } from '../companies/companies.model';
 import { Entries } from '../entries/entries.model';
+import { EntriesApproval } from '../entries_approval/entries_approval.model';
 
 @Table
 export class Users extends Model {
@@ -55,6 +56,6 @@ export class Users extends Model {
 	@HasMany(() => Entries, { foreignKey: 'user_id' })
 	entries: Entries[];
 
-	@HasMany(() => Entries, { foreignKey: 'approved_by' })
-	approvedEntries: Entries[];
+	@HasMany(() => EntriesApproval, { foreignKey: 'approval_user_id' })
+	entries_approval: EntriesApproval[];
 }

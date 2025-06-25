@@ -14,6 +14,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtConfigModule } from '../common/jwt/jwt.module';
 import { WorkingDaysModule } from '../working-days/working-days.module';
 import { EntriesModule } from '../entries/entries.module';
+import { EntriesApprovalModule } from '../entries_approval/entries_approval.module';
 
 //Models
 import { Companies } from '../companies/companies.model';
@@ -22,6 +23,7 @@ import { Roles } from '../roles/roles.model';
 import { UserRoles } from '../user-roles/user-roles.model';
 import { WorkingDays } from '../working-days/working-days.model';
 import { Entries } from '../entries/entries.model';
+import { EntriesApproval } from '../entries_approval/entries_approval.model';
 
 //Guards
 import { AuthGuard } from '../auth/auth.guard';
@@ -35,7 +37,15 @@ import { AppService } from './app.service';
 	imports: [
 		SequelizeModule.forRoot({
 			...configs.db,
-			models: [Users, Companies, Roles, UserRoles, WorkingDays, Entries],
+			models: [
+				Users,
+				Companies,
+				Roles,
+				UserRoles,
+				WorkingDays,
+				Entries,
+				EntriesApproval,
+			],
 		}),
 		ScheduleModule.forRoot(),
 		JwtConfigModule,
@@ -46,6 +56,7 @@ import { AppService } from './app.service';
 		CompaniesModule,
 		WorkingDaysModule,
 		EntriesModule,
+		EntriesApprovalModule,
 	],
 	controllers: [AppController],
 	providers: [

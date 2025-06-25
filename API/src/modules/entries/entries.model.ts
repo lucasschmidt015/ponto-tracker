@@ -3,16 +3,21 @@ import {
 	Model,
 	Table,
 	DataType,
+	PrimaryKey,
 	ForeignKey,
 	BelongsTo,
+	HasOne,
 } from 'sequelize-typescript';
 
 import { Users } from '../users/users.model';
 
 import { WorkingDays } from '../working-days/working-days.model';
 
+import { EntriesApproval } from '../entries_approval/entries_approval.model';
+
 @Table
 export class Entries extends Model {
+	@PrimaryKey
 	@Column({
 		primaryKey: true,
 		type: DataType.STRING(36),
@@ -62,13 +67,6 @@ export class Entries extends Model {
 	@BelongsTo(() => Users, { foreignKey: 'user_id' })
 	user: Users;
 
-	@ForeignKey(() => Users)
-	@Column({
-		type: DataType.STRING(36),
-		allowNull: true,
-	})
-	approved_by: string;
-
-	@BelongsTo(() => Users, { foreignKey: 'approved_by' })
-	approved_by_user: Users;
+	@HasOne(() => EntriesApproval, { foreignKey: 'entry_id' })
+	entry_approval: EntriesApproval;
 }
