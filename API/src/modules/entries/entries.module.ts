@@ -14,5 +14,6 @@ import { CompaniesModule } from '../companies/companies.module';
 	],
 	controllers: [EntriesController],
 	providers: [EntriesService],
+	exports: [EntriesService],
 })
 export class EntriesModule {}
