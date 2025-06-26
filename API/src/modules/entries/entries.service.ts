@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	NotFoundException,
+	forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,6 +12,7 @@ import { WorkingDays } from '../working-days/working-days.model';
 
 import { WorkingDaysService } from '../working-days/working-days.service';
 import { CompaniesService } from '../companies/companies.service';
+import { EntriesApprovalService } from '../entries_approval/entries_approval.service';
 
 import { RegisterNewEntryDto } from './dtos/register-new-entry.dto';
 
@@ -16,6 +22,8 @@ export class EntriesService {
 		@InjectModel(Entries) private entries: typeof Entries,
 		private workingDay: WorkingDaysService,
 		private companies: CompaniesService,
+		@Inject(forwardRef(() => EntriesApprovalService))
+		private entriesApprovalService: EntriesApprovalService,
 	) {}
 
 	private calculateDistanceInMeters(
@@ -94,8 +102,6 @@ export class EntriesService {
 			entry.longitude,
 		);
 
-		// If the location is not valid, we need to create a record in the new table to controll it <---
-
 		const _id = uuidv4();
 
 		const newEntry = await this.entries.create({
@@ -108,6 +114,29 @@ export class EntriesService {
 			is_approved: validLocation,
 		});
 
+		if (!validLocation) {
+			await this.entriesApprovalService.createEntryApproval(
+				newEntry.dataValues._id,
+			);
+		}
+
 		return newEntry;
+	}
+
+	async getUserEntriesByDay(user_id: string, date: Date): Promise<Entries[]> {
+		const startOfDay = new Date(date);
+		startOfDay.setHours(0, 0, 0, 0);
+		const endOfDay = new Date(date);
+		endOfDay.setHours(23, 59, 59, 999);
+
+		return this.entries.findAll({
+			where: {
+				user_id,
+				entry_time: {
+					$gte: startOfDay,
+					$lte: endOfDay,
+				},
+			},
+		});
 	}
 }
