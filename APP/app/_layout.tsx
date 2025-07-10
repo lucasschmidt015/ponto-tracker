@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import 'react-native-reanimated';
-import Toast from 'react-native-toast-message';
+import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -46,6 +46,35 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+  // Custom toast config for dark/light theme
+  const toastConfig = {
+    success: (props: any) => (
+      <BaseToast
+        {...props}
+        style={{
+          backgroundColor: colorScheme === 'dark' ? '#222' : '#fff',
+          borderLeftColor: colorScheme === 'dark' ? '#4ade80' : '#22c55e',
+          borderLeftWidth: 5,
+        }}
+        text1Style={{ color: colorScheme === 'dark' ? '#fff' : '#222' }}
+        text2Style={{ color: colorScheme === 'dark' ? '#ccc' : '#444' }}
+      />
+    ),
+    error: (props: any) => (
+      <ErrorToast
+        {...props}
+        style={{
+          backgroundColor: colorScheme === 'dark' ? '#222' : '#fff',
+          borderLeftColor: colorScheme === 'dark' ? '#f87171' : '#ef4444',
+          borderLeftWidth: 5,
+        }}
+        text1Style={{ color: colorScheme === 'dark' ? '#fff' : '#222' }}
+        text2Style={{ color: colorScheme === 'dark' ? '#ccc' : '#444' }}
+      />
+    ),
+    // ...add more types as needed
+  };
+
   return (
     <Provider store={store}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -61,6 +90,7 @@ function RootLayoutNav() {
         visibilityTime={8000}
         autoHide={true}
         topOffset={50}
+        config={toastConfig}
       />
     </Provider>
   );
