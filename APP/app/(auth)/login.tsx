@@ -29,7 +29,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
     if (!emailRegex.test(email)) {
@@ -42,13 +42,21 @@ const Login: React.FC = () => {
       return;
     }
   
-    setLoading(true);
-    console.log('Logging in with:', { email, password });
-  
-    setTimeout(() => {
-      dispatch(login('mock-token-123')); 
+    try {    
+      setLoading(true);
+      const response = await dispatch(login({ email, password })); 
+
+      if (response.payload) {
+        alert('Login successful!');
+      } else {
+        alert('Login failed. Please check your credentials and try again.');
+      }
+
+    } catch (error) {
+      alert('Login failed. Please check your credentials and try again.');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleForgotPassword = () => {
