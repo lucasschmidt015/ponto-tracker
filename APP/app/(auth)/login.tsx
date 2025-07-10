@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Redirect } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 
 const Login: React.FC = () => {
@@ -33,12 +34,20 @@ const Login: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
     if (!emailRegex.test(email)) {
-      alert('Please enter a valid email address.');
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Email',
+        text2: 'Please enter a valid email address.',
+      })
       return;
     }
   
-    if (password.length < 5) {
-      alert('Password must be at least 5 characters long.');
+    if (password.length < 5) {      
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Password',
+        text2: 'Password must be at least 5 characters long.',
+      })
       return;
     }
   
@@ -47,13 +56,25 @@ const Login: React.FC = () => {
       const response = await dispatch(login({ email, password })); 
 
       if (response.payload) {
-        alert('Login successful!');
+        Toast.show({
+          type: 'success',
+          text1: 'Login Successful',
+          text2: 'Welcome back!',
+        });
       } else {
-        alert('Login failed. Please check your credentials and try again.');
+        Toast.show({
+          type: 'error',
+          text1: 'Login Failed',
+          text2: 'Please check your credentials and try again.',
+        });
       }
 
     } catch (error) {
-      alert('Login failed. Please check your credentials and try again.');
+      Toast.show({
+        type: 'error',
+        text1: 'Login Error',
+        text2: 'An error occurred while trying to log in. Please try again later.',
+      });
     } finally {
       setLoading(false);
     }

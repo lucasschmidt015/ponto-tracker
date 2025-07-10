@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -54,6 +55,13 @@ function RootLayoutNav() {
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
+      <Toast
+        position="top"
+        bottomOffset={50}
+        visibilityTime={8000}
+        autoHide={true}
+        topOffset={50}
+      />
     </Provider>
   );
 }
