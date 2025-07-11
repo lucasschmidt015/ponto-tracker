@@ -24,6 +24,7 @@ import { UserRoles } from '../user-roles/user-roles.model';
 import { WorkingDays } from '../working-days/working-days.model';
 import { Entries } from '../entries/entries.model';
 import { EntriesApproval } from '../entries_approval/entries_approval.model';
+import { AuthToken } from '../auth/auth-token.model';
 
 //Guards
 import { AuthGuard } from '../auth/auth.guard';
@@ -45,6 +46,7 @@ import { AppService } from './app.service';
 				WorkingDays,
 				Entries,
 				EntriesApproval,
+				AuthToken,
 			],
 		}),
 		ScheduleModule.forRoot(),

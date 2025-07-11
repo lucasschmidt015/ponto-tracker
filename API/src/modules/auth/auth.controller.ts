@@ -13,4 +13,24 @@ export class AuthController {
 	signIn(@Body() signInDto: SignInDto) {
 		return this.authService.signIn(signInDto.email, signInDto.password);
 	}
+
+	@HttpCode(HttpStatus.OK)
+	@Post('logout')
+	async logout(@Body() body: { token: string; userId: string }) {
+		await this.authService.logout(body.token, body.userId);
+		return { message: 'Logged out successfully' };
+	}
+
+	@HttpCode(HttpStatus.OK)
+	@Post('validate')
+	async validate(@Body() body: { token: string; userId: string }) {
+		const valid = await this.authService.isTokenValid(body.token, body.userId);
+		return { valid };
+	}
+
+	@HttpCode(HttpStatus.OK)
+	@Post('refresh')
+	async refresh(@Body() body: { refreshToken: string; userId: string }) {
+		return this.authService.refreshToken(body.refreshToken, body.userId);
+	}
 }
