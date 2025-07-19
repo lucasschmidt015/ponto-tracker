@@ -28,6 +28,7 @@ export class AuthController {
 		return { valid };
 	}
 
+	@Public()
 	@HttpCode(HttpStatus.OK)
 	@Post('refresh')
 	async refresh(@Body() body: { refreshToken: string; userId: string }) {

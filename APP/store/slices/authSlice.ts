@@ -1,98 +1,218 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import api from '@/utils/axios'; 
+
+interface UserInfo {
+  _id: string;
+  name: string;
+  email: string;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
+  refreshToken: string | null;
+  user: UserInfo | null;
   isLoading: boolean;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
   token: null,
+  refreshToken: null,
+  user: null,
   isLoading: true,
 };
 
-const performLogin = async (email: string, password: string): Promise<string | null> => {
+const performLogin = async (email: string, password: string): Promise<{ access_token: string; refresh_token: string; user: UserInfo } | null> => {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
   if (!API_URL) {
     throw new Error('API URL is not defined');
   }
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-    console.log('just after response');
-
+    const response = await api.post(`${API_URL}/auth/login`, { email, password }); // use api
     if (response.status !== 200) {
-      console.log('login failed with status code different than 200');
       return null;
     }
-
-    return response.data.access_token;
+    return response.data;
   } catch (error) {
     return null;
   }
-  
-}
+};
 
-export const restoreToken = createAsyncThunk('auth/restoreToken', async () => {
-    const token = await AsyncStorage.getItem('token');
-    return token;
-  });
-  
-  export const login = createAsyncThunk(
+export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }: { email: string; password: string }) => {    
-    const token = await performLogin(email, password);
-
-    if (!token ) {
-      console.log('it is my new throw')
-      return null
+  async ({ email, password }: { email: string; password: string }) => {
+    const data = await performLogin(email, password);
+    if (!data) {
+      return null;
     }
-
-    await AsyncStorage.setItem('token', token);
-
-    return token;
+    await AsyncStorage.setItem('token', data.access_token);
+    await AsyncStorage.setItem('refreshToken', data.refresh_token);
+    await AsyncStorage.setItem('user', JSON.stringify(data.user));
+    return { token: data.access_token, refreshToken: data.refresh_token, user: data.user };
   }
 );
-  
-  // We'll add a route to perform logout later
-  const performLogout = async (): Promise<void> => {
+
+export const restoreToken = createAsyncThunk('auth/restoreToken', async (_, { dispatch }) => {
+  const token = await AsyncStorage.getItem('token');
+  const refreshToken = await AsyncStorage.getItem('refreshToken');
+  const userStr = await AsyncStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  if (!token || !user?._id) {
+    await dispatch(logout());
+    return { token: null, refreshToken: null, user: null };
+  }
+
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  let isValid = false;
+  if (API_URL) {
     try {
-      await AsyncStorage.removeItem('token');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw new Error('Logout failed');
+      const response = await api.post(
+        `${API_URL}/auth/validate`,
+        { 
+          token, 
+          userId: user._id 
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log('Token validation response:', response.data); 
+
+      isValid = response.data?.valid === true;
+    } catch (e) {
+      isValid = false;
     }
-  };
+  }
 
-  export const logout = createAsyncThunk('auth/logout', async () => {
-    await performLogout();
-  });
+  if (isValid) {
+    return { token, refreshToken, user };
+  }
 
-  const authSlice = createSlice({
-    name: 'auth',
-    initialState,
-    reducers: {},
-    extraReducers: builder => {
-      builder
-        .addCase(restoreToken.fulfilled, (state, action: PayloadAction<string | null>) => {
-          state.token = action.payload;
-          state.isAuthenticated = !!action.payload;
-          state.isLoading = false;
-        })
-        .addCase(login.fulfilled, (state, action: PayloadAction<string>) => {
-          state.token = action.payload;
+  // Try to refresh token if not valid
+  if (refreshToken && user?._id && API_URL) {
+    try {
+      console.log('will refresh token');
+      const response = await api.post(
+        `${API_URL}/auth/refresh`,
+        { refreshToken, userId: user._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.status === 200) {
+        const { access_token, refresh_token, user: newUser } = response.data;
+        console.log('Token refreshed successfully');
+        await AsyncStorage.setItem('token', access_token);
+        await AsyncStorage.setItem('refreshToken', refresh_token);
+        await AsyncStorage.setItem('user', JSON.stringify(newUser));
+        return { token: access_token, refreshToken: refresh_token, user: newUser };
+      }
+    } catch (e) {
+      console.error('Token refresh failed:', e);
+    }
+  }
+
+  await dispatch(logout());
+  return { token: null, refreshToken: null, user: null };
+});
+
+
+
+const performLogout = async (): Promise<void> => {
+  try {
+    await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
+  } catch (error) {
+    throw new Error('Logout failed');
+  }
+};
+
+export const logout = createAsyncThunk('auth/logout', async () => {
+  await performLogout();
+});
+
+export const refreshTokenThunk = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { getState }) => {
+    const state = (getState() as any).auth;
+    const refreshToken = state.refreshToken || (await AsyncStorage.getItem('refreshToken'));
+    const user = state.user || JSON.parse((await AsyncStorage.getItem('user')) || 'null');
+    const API_URL = process.env.EXPO_PUBLIC_API_URL;
+    if (!API_URL || !refreshToken || !user?._id) {
+      throw new Error('Missing API URL, refreshToken, or userId');
+    }
+    try {
+      // Use the current token if available for Authorization header
+      const token = state.token || (await AsyncStorage.getItem('token'));
+      const response = await api.post(
+        `${API_URL}/auth/refresh`,
+        { refreshToken, userId: user._id },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
+      if (response.status !== 200) {
+        throw new Error('Failed to refresh token');
+      }
+      const { access_token, refresh_token, user: newUser } = response.data;
+      await AsyncStorage.setItem('token', access_token);
+      await AsyncStorage.setItem('refreshToken', refresh_token);
+      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      return { token: access_token, refreshToken: refresh_token, user: newUser };
+    } catch (error) {
+      await performLogout();
+      throw error;
+    }
+  }
+);
+
+
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {},
+  extraReducers: builder => {
+    builder
+      .addCase(restoreToken.fulfilled, (state, action: PayloadAction<{ token: string | null; refreshToken: string | null; user: UserInfo | null }>) => {
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken;
+        state.user = action.payload.user;
+        state.isAuthenticated = !!action.payload.token;
+        state.isLoading = false;
+      })
+      .addCase(login.fulfilled, (state, action: PayloadAction<{ token: string; refreshToken: string; user: UserInfo } | null>) => {
+        if (action.payload) {
+          state.token = action.payload.token;
+          state.refreshToken = action.payload.refreshToken;
+          state.user = action.payload.user;
           state.isAuthenticated = true;
-          state.isLoading = false;
-        })
-        .addCase(logout.fulfilled, state => {
+        } else {
           state.token = null;
+          state.refreshToken = null;
+          state.user = null;
           state.isAuthenticated = false;
-          state.isLoading = false;
-        });
-    },
-  });
-  
-  export default authSlice.reducer;
+        }
+        state.isLoading = false;
+      })
+      .addCase(logout.fulfilled, state => {
+        state.token = null;
+        state.refreshToken = null;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
+      })
+      .addCase(refreshTokenThunk.fulfilled, (state, action: PayloadAction<{ token: string; refreshToken: string; user: UserInfo } | undefined>) => {
+        if (action.payload) {
+          state.token = action.payload.token;
+          state.refreshToken = action.payload.refreshToken;
+          state.user = action.payload.user;
+          state.isAuthenticated = true;
+        } else {
+          state.token = null;
+          state.refreshToken = null;
+          state.user = null;
+          state.isAuthenticated = false;
+        }
+      });
+  },
+});
+
+export default authSlice.reducer;

@@ -107,25 +107,37 @@ export class AuthService {
 		const tokenRecord = await this.authTokenModel.findOne({
 			where: { token, user_id: userId },
 		});
+
 		if (!tokenRecord) {
 			throw new NotFoundException(
 				'Token not found or does not belong to user.',
 			);
 		}
+
 		if (tokenRecord.revoked) {
 			return;
 		}
+
 		tokenRecord.revoked = true;
+
 		await tokenRecord.save();
 	}
 
 	async isTokenValid(token: string, userId: string): Promise<boolean> {
 		const tokenRecord = await this.authTokenModel.findOne({
-			where: { token, user_id: userId },
+			where: {
+				token,
+				user_id: userId,
+			},
+			raw: true,
 		});
+
 		if (!tokenRecord) return false;
+
 		if (tokenRecord.revoked) return false;
+
 		if (tokenRecord.expires_at <= new Date()) return false;
+
 		return true;
 	}
 
@@ -134,8 +146,14 @@ export class AuthService {
 		userId: string,
 	): Promise<{ access_token: string; refresh_token: string }> {
 		const tokenRecord = await this.authTokenModel.findOne({
-			where: { token: refreshToken, user_id: userId, type: 'refresh' },
+			where: {
+				token: refreshToken,
+				user_id: userId,
+				type: 'refresh',
+			},
+			raw: true,
 		});
+
 		if (
 			!tokenRecord ||
 			tokenRecord.revoked ||
@@ -143,10 +161,16 @@ export class AuthService {
 		) {
 			throw new UnauthorizedException('Invalid or expired refresh token.');
 		}
-		// Revoke old refresh token (one-time use)
-		tokenRecord.revoked = true;
-		await tokenRecord.save();
-		// Revoke the previous access token for this user session
+
+		await this.authTokenModel.update(
+			{ revoked: true },
+			{
+				where: {
+					_id: tokenRecord._id,
+				},
+			},
+		);
+
 		await this.authTokenModel.update(
 			{ revoked: true },
 			{
@@ -158,17 +182,20 @@ export class AuthService {
 				},
 			},
 		);
+
 		// Issue new tokens
-		const user = await this.usersService.findOne(userId);
+		const user = await this.usersService.findUserByIdWithRoles(userId);
 		if (!user) {
 			throw new NotFoundException('User not found.');
 		}
+
 		const roles = user.userRoles?.map((ur) => ur.role?.name) ?? [];
 		const payload = {
 			sub: user._id,
 			email: user.email,
 			roles,
 		};
+
 		const newAccessToken = await this.jwtService.signAsync(payload);
 		const accessExpiresMs = parseExpiresInToMs(TOKEN_EXPIRES_IN);
 		const accessExpiresAt = new Date(Date.now() + accessExpiresMs);
@@ -191,6 +218,7 @@ export class AuthService {
 			revoked: false,
 			type: 'refresh',
 		});
+
 		return {
 			access_token: newAccessToken,
 			refresh_token: newRefreshToken,

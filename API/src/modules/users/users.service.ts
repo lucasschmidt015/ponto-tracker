@@ -55,6 +55,27 @@ export class UsersService {
 		return user?.get({ plain: true }) ?? null;
 	}
 
+	async findUserByIdWithRoles(_id: string): Promise<Users | null> {
+		const user = await this.usersModule.findOne({
+			where: {
+				_id,
+			},
+			include: [
+				{
+					association: 'userRoles',
+					include: ['role'],
+				},
+			],
+			attributes: { exclude: ['password'] },
+		});
+
+		if (!user) {
+			throw new NotFoundException(`User with ID ${_id} not found`);
+		}
+
+		return user?.get({ plain: true }) ?? null;
+	}
+
 	findAll(): Promise<Users[]> {
 		return this.usersModule.findAll({
 			attributes: { exclude: ['password'] },
