@@ -103,24 +103,21 @@ export class AuthService {
 		};
 	}
 
-	async logout(token: string, userId: string): Promise<void> {
-		const tokenRecord = await this.authTokenModel.findOne({
-			where: { token, user_id: userId },
-		});
-
-		if (!tokenRecord) {
-			throw new NotFoundException(
-				'Token not found or does not belong to user.',
+	async logout(userId: string): Promise<void> {
+		try {
+			await this.authTokenModel.update(
+				{ revoked: true },
+				{
+					where: {
+						user_id: userId,
+						revoked: false,
+					},
+				},
 			);
+		} catch (error) {
+			console.error(`Failed to logout user ${userId}:`, error);
+			throw error;
 		}
-
-		if (tokenRecord.revoked) {
-			return;
-		}
-
-		tokenRecord.revoked = true;
-
-		await tokenRecord.save();
 	}
 
 	async isTokenValid(token: string, userId: string): Promise<boolean> {

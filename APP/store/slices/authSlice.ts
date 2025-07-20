@@ -78,8 +78,6 @@ export const restoreToken = createAsyncThunk('auth/restoreToken', async (_, { di
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log('Token validation response:', response.data); 
-
       isValid = response.data?.valid === true;
     } catch (e) {
       isValid = false;
@@ -90,10 +88,8 @@ export const restoreToken = createAsyncThunk('auth/restoreToken', async (_, { di
     return { token, refreshToken, user };
   }
 
-  // Try to refresh token if not valid
   if (refreshToken && user?._id && API_URL) {
     try {
-      console.log('will refresh token');
       const response = await api.post(
         `${API_URL}/auth/refresh`,
         { refreshToken, userId: user._id },
@@ -101,14 +97,13 @@ export const restoreToken = createAsyncThunk('auth/restoreToken', async (_, { di
       );
       if (response.status === 200) {
         const { access_token, refresh_token, user: newUser } = response.data;
-        console.log('Token refreshed successfully');
         await AsyncStorage.setItem('token', access_token);
         await AsyncStorage.setItem('refreshToken', refresh_token);
         await AsyncStorage.setItem('user', JSON.stringify(newUser));
         return { token: access_token, refreshToken: refresh_token, user: newUser };
       }
     } catch (e) {
-      console.error('Token refresh failed:', e);
+      // Maybe add some message telling the user that his session has expired
     }
   }
 
@@ -118,7 +113,21 @@ export const restoreToken = createAsyncThunk('auth/restoreToken', async (_, { di
 
 
 
-const performLogout = async (): Promise<void> => {
+const performLogout = async (token?: string, userId?: string): Promise<void> => {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  
+  if (API_URL && userId) {
+    try {
+      await api.post(
+        `${API_URL}/auth/logout`,
+        { userId },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
+    } catch (error) {
+      
+    }
+  }
+
   try {
     await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
   } catch (error) {
@@ -126,8 +135,13 @@ const performLogout = async (): Promise<void> => {
   }
 };
 
-export const logout = createAsyncThunk('auth/logout', async () => {
-  await performLogout();
+export const logout = createAsyncThunk('auth/logout', async (_, { getState }) => {
+  const state = (getState() as any).auth;
+  const token = state.token || (await AsyncStorage.getItem('token'));
+  const userStr = state.user ? JSON.stringify(state.user) : (await AsyncStorage.getItem('user'));
+  const user = userStr ? JSON.parse(userStr) : null;
+  
+  await performLogout(token, user?._id);
 });
 
 export const refreshTokenThunk = createAsyncThunk(
@@ -157,7 +171,8 @@ export const refreshTokenThunk = createAsyncThunk(
       await AsyncStorage.setItem('user', JSON.stringify(newUser));
       return { token: access_token, refreshToken: refresh_token, user: newUser };
     } catch (error) {
-      await performLogout();
+      const token = state.token || (await AsyncStorage.getItem('token'));
+      await performLogout(token, user?._id);
       throw error;
     }
   }
