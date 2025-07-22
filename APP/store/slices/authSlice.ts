@@ -146,7 +146,7 @@ export const logout = createAsyncThunk('auth/logout', async (_, { getState }) =>
 
 export const refreshTokenThunk = createAsyncThunk(
   'auth/refreshToken',
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const state = (getState() as any).auth;
     const refreshToken = state.refreshToken || (await AsyncStorage.getItem('refreshToken'));
     const user = state.user || JSON.parse((await AsyncStorage.getItem('user')) || 'null');
@@ -155,12 +155,9 @@ export const refreshTokenThunk = createAsyncThunk(
       throw new Error('Missing API URL, refreshToken, or userId');
     }
     try {
-      // Use the current token if available for Authorization header
-      const token = state.token || (await AsyncStorage.getItem('token'));
       const response = await api.post(
         `${API_URL}/auth/refresh`,
-        { refreshToken, userId: user._id },
-        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+        { refreshToken, userId: user._id },      
       );
       if (response.status !== 200) {
         throw new Error('Failed to refresh token');
@@ -171,8 +168,7 @@ export const refreshTokenThunk = createAsyncThunk(
       await AsyncStorage.setItem('user', JSON.stringify(newUser));
       return { token: access_token, refreshToken: refresh_token, user: newUser };
     } catch (error) {
-      const token = state.token || (await AsyncStorage.getItem('token'));
-      await performLogout(token, user?._id);
+      await dispatch(logout());
       throw error;
     }
   }
@@ -226,6 +222,13 @@ const authSlice = createSlice({
           state.user = null;
           state.isAuthenticated = false;
         }
+      })
+      .addCase(refreshTokenThunk.rejected, (state) => {
+        state.token = null;
+        state.refreshToken = null;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
       });
   },
 });
