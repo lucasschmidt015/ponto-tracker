@@ -5,9 +5,8 @@ import { useEffect } from 'react';
 
 import { Redirect } from "expo-router";
 
-import { useDispatch, useSelector } from 'react-redux';
-import { restoreToken } from '@/store/slices/authSlice';
-import type { AppDispatch, RootState } from '@/store';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
 import { useColorScheme } from 'react-native';
 import OpenDrawerButton from '@/components/OpenDrawerButton';
 import LogoutButton from '@/components/LogoutButton';
@@ -19,12 +18,6 @@ const Reports = () => {
   const isDarkMode = colorScheme === 'dark';
   const styles = getStyles(isDarkMode);
   const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth)
-
-  const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    dispatch(restoreToken());
-  }, [dispatch]);
 
   if (isLoading) {
     return (

@@ -4,8 +4,10 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { store } from '@/store';
+import { restoreToken } from '@/store/slices/authSlice';
+import type { AppDispatch } from '@/store';
 import 'react-native-reanimated';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 
@@ -43,6 +45,16 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(restoreToken());
+  }, [dispatch]);
+
+  return <>{children}</>;
+}
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
@@ -77,21 +89,23 @@ function RootLayoutNav() {
 
   return (
     <Provider store={store}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-      <Toast
-        position="top"
-        bottomOffset={50}
-        visibilityTime={8000}
-        autoHide={true}
-        topOffset={50}
-        config={toastConfig}
-      />
+      <AuthInitializer>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ThemeProvider>
+        <Toast
+          position="top"
+          bottomOffset={50}
+          visibilityTime={8000}
+          autoHide={true}
+          topOffset={50}
+          config={toastConfig}
+        />
+      </AuthInitializer>
     </Provider>
   );
 }
