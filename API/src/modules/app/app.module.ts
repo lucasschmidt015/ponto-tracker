@@ -49,6 +49,7 @@ import { AppService } from './app.service';
 				AuthToken,
 			],
 		}),
+		SequelizeModule.forFeature([AuthToken]),
 		ScheduleModule.forRoot(),
 		JwtConfigModule,
 		AuthModule,

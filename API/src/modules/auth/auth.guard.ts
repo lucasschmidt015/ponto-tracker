@@ -9,12 +9,27 @@ import { Request } from 'express';
 import configs from 'config';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/custom-decorators/public';
+import { InjectModel } from '@nestjs/sequelize';
+import { AuthToken } from 'src/modules/auth/auth-token.model';
+
+interface JwtPayload {
+	sub: string;
+	email: string;
+	roles: string[];
+	iat?: number;
+	exp?: number;
+}
+
+interface RequestWithUser extends Request {
+	user?: JwtPayload;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
 	constructor(
 		private jwtService: JwtService,
 		private reflector: Reflector,
+		@InjectModel(AuthToken) private authTokenModel: typeof AuthToken,
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,7 +42,7 @@ export class AuthGuard implements CanActivate {
 			return true;
 		}
 
-		const request: Request = context.switchToHttp().getRequest();
+		const request: RequestWithUser = context.switchToHttp().getRequest();
 		const token = this.extractTokenFromHeader(request);
 
 		if (!token) {
@@ -35,11 +50,28 @@ export class AuthGuard implements CanActivate {
 		}
 
 		try {
-			const payload = await this.jwtService.verifyAsync(token, {
+			const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
 				secret: configs.auth.jwt_secret,
 			});
 
-			request['user'] = payload;
+			const tokenRecord = await this.authTokenModel.findOne({
+				where: {
+					token,
+					user_id: payload.sub,
+					type: 'access',
+				},
+				raw: true,
+			});
+
+			if (
+				!tokenRecord ||
+				tokenRecord.revoked ||
+				tokenRecord.expires_at <= new Date()
+			) {
+				throw new UnauthorizedException('Token is invalid or expired');
+			}
+
+			request.user = payload;
 		} catch {
 			throw new UnauthorizedException();
 		}
@@ -47,7 +79,7 @@ export class AuthGuard implements CanActivate {
 		return true;
 	}
 
-	private extractTokenFromHeader(request: Request): string | undefined {
+	private extractTokenFromHeader(request: RequestWithUser): string | undefined {
 		const [type, token] = request.headers.authorization?.split(' ') ?? [];
 		return type === 'Bearer' ? token : undefined;
 	}
