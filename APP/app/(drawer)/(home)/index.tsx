@@ -24,6 +24,7 @@ const Home = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [entries, setEntries] = useState<any[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const fetchTodayEntries = async () => {
     if (!user?._id || !token) return;
@@ -57,6 +58,14 @@ const Home = () => {
       fetchTodayEntries();
     }
   }, [isAuthenticated, user?._id, token]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const getCurrentLocation = async () => {
     try {
@@ -153,7 +162,9 @@ const Home = () => {
 
     let totalMinutes = 0;
 
-    for (let i = 0; i < sortedEntries.length - 1; i += 2) {
+    const completePairs = Math.floor(sortedEntries.length / 2);
+    
+    for (let i = 0; i < completePairs * 2; i += 2) {
       const checkIn = new Date(sortedEntries[i].entry_time);
       const checkOut = new Date(sortedEntries[i + 1].entry_time);
       
@@ -165,9 +176,25 @@ const Home = () => {
       }
     }
 
+    if (sortedEntries.length % 2 === 1) {
+      const lastEntry = sortedEntries[sortedEntries.length - 1];
+      const lastCheckIn = new Date(lastEntry.entry_time);
+      
+      const diffMs = currentTime.getTime() - lastCheckIn.getTime();
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMinutes > 0) {
+        totalMinutes += diffMinutes;
+      }
+    }
+
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const hasActiveSession = () => {
+    return entries.length > 0 && entries.length % 2 === 1;
   };
 
   const getCurrentDate = () => {
@@ -235,6 +262,9 @@ const Home = () => {
       <View style={styles.summary}>
         <Text style={styles.timeWorkedLabel}>Time Worked Today:</Text>
         <Text style={styles.timeWorked}>{calculateTimeWorked()}</Text>
+        {hasActiveSession() && (
+          <Text style={styles.activeSessionText}>🟢 Active session</Text>
+        )}
       </View>
 
       <TouchableOpacity 
@@ -371,6 +401,12 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     fontSize: 16,
     color: isDarkMode ? '#ccc' : '#777',
     fontStyle: 'italic',
+  },
+  activeSessionText: {
+    fontSize: 14,
+    color: isDarkMode ? '#4ade80' : '#16a34a',
+    marginTop: 8,
+    fontWeight: '600',
   },
 });
 
