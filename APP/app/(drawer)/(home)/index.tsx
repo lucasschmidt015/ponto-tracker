@@ -18,7 +18,19 @@ const Home = () => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const styles = getStyles(isDarkMode);
-  const { isAuthenticated, isLoading, token } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, isLoading, token, user, company } = useSelector((state: RootState) => state.auth)
+
+  // Get current date formatted
+  const getCurrentDate = () => {
+    const today = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return today.toLocaleDateString('en-US', options);
+  };
 
   if (isLoading) {
     return (
@@ -32,6 +44,7 @@ const Home = () => {
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
   }
+
   return (
     <ScrollView contentContainerStyle={styles.container} scrollEnabled={false}>
       <OpenDrawerButton/>
@@ -39,8 +52,8 @@ const Home = () => {
       <View style={styles.topContainer}>
         <View style={styles.semiCircle} />
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hello Lucas Torchelsen Schmidt</Text>
-          <Text style={styles.date}>Tuesday, March 13 2025</Text>
+          <Text style={styles.greeting}>Hello {user?.name || 'User'} 🤓</Text>
+          <Text style={styles.date}>{getCurrentDate()}</Text>
         </View>
       </View>
 
