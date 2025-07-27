@@ -5,6 +5,7 @@ import {
 	forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Entries } from './entries.model';
@@ -125,18 +126,20 @@ export class EntriesService {
 
 	async getUserEntriesByDay(user_id: string, date: Date): Promise<Entries[]> {
 		const startOfDay = new Date(date);
-		startOfDay.setHours(0, 0, 0, 0);
+		startOfDay.setUTCHours(0, 0, 0, 0);
 		const endOfDay = new Date(date);
-		endOfDay.setHours(23, 59, 59, 999);
+		endOfDay.setUTCHours(23, 59, 59, 999);
 
-		return this.entries.findAll({
+		return await this.entries.findAll({
 			where: {
 				user_id,
 				entry_time: {
-					$gte: startOfDay,
-					$lte: endOfDay,
+					[Op.gte]: startOfDay,
+					[Op.lte]: endOfDay,
 				},
 			},
+			order: [['entry_time', 'ASC']],
+			raw: true,
 		});
 	}
 }

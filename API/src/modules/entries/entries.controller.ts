@@ -1,4 +1,12 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+	Controller,
+	Post,
+	Body,
+	UseGuards,
+	Get,
+	Param,
+	Query,
+} from '@nestjs/common';
 import { EntriesService } from './entries.service';
 
 import { RegisterNewEntryDto } from './dtos/register-new-entry.dto';
@@ -12,5 +20,14 @@ export class EntriesController {
 	@Post()
 	registerUserEntry(@Body() entry: RegisterNewEntryDto) {
 		return this.entriesService.registerUserEntry(entry);
+	}
+
+	@Get(':user_id')
+	getUserEntriesByDay(
+		@Param('user_id') user_id: string,
+		@Query('date') date: string,
+	) {
+		const entryDate = date ? new Date(date) : new Date();
+		return this.entriesService.getUserEntriesByDay(user_id, entryDate);
 	}
 }

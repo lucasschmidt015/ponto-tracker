@@ -22,8 +22,42 @@ const Home = () => {
   const styles = getStyles(isDarkMode);
   const { isAuthenticated, isLoading, token, user, company } = useSelector((state: RootState) => state.auth);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
 
-  // Function to get current location
+  const fetchTodayEntries = async () => {
+    if (!user?._id || !token) return;
+
+    setLoadingEntries(true);
+    try {
+      const today = new Date().toISOString().split('T')[0]; 
+      const response = await api.get(`/entries/${user._id}?date=${today}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.status === 200) {
+        console.log('response.data: ', response.data)
+        setEntries(response.data || []);
+      }
+    } catch (error: any) {
+      console.error('Error fetching entries:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to fetch entries.';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+      });
+    } finally {
+      setLoadingEntries(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && user?._id && token) {
+      fetchTodayEntries();
+    }
+  }, [isAuthenticated, user?._id, token]);
+
   const getCurrentLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -55,7 +89,6 @@ const Home = () => {
     }
   };
 
-  // Function to register entry
   const registerEntry = async () => {
     if (!user?._id || !company?._id || !token) {
       Toast.show({
@@ -90,6 +123,7 @@ const Home = () => {
           text1: 'Success',
           text2: 'Entry registered successfully!',
         });
+        fetchTodayEntries();
       } else {
         Toast.show({
           type: 'error',
@@ -110,7 +144,32 @@ const Home = () => {
     }
   };
 
-  // Get current date formatted
+  const calculateTimeWorked = () => {
+    if (entries.length === 0) return '00:00';
+    
+    const sortedEntries = [...entries].sort((a, b) => 
+      new Date(a.entry_time).getTime() - new Date(b.entry_time).getTime()
+    );
+
+    let totalMinutes = 0;
+
+    for (let i = 0; i < sortedEntries.length - 1; i += 2) {
+      const checkIn = new Date(sortedEntries[i].entry_time);
+      const checkOut = new Date(sortedEntries[i + 1].entry_time);
+      
+      const diffMs = checkOut.getTime() - checkIn.getTime();
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMinutes > 0) {
+        totalMinutes += diffMinutes;
+      }
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   const getCurrentDate = () => {
     const today = new Date();
     const options: Intl.DateTimeFormatOptions = { 
@@ -148,15 +207,34 @@ const Home = () => {
       </View>
 
       <ScrollView style={styles.timesContainer} nestedScrollEnabled={true}>
-        <TimeItem time="07:45" />
-        <TimeItem time="12:00" />
-        <TimeItem time="13:30" />
-        <TimeItem time="18:00" />
+        {loadingEntries ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color={isDarkMode ? '#fff' : '#000'} size="small" />
+            <Text style={styles.loadingText}>Loading entries...</Text>
+          </View>
+        ) : entries.length > 0 ? (
+          entries
+            .sort((a, b) => new Date(a.entry_time).getTime() - new Date(b.entry_time).getTime())
+            .map((entry, index) => (
+              <TimeItem 
+                key={entry._id || index} 
+                time={new Date(entry.entry_time).toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false 
+                })} 
+              />
+            ))
+        ) : (
+          <View style={styles.noEntriesContainer}>
+            <Text style={styles.noEntriesText}>No entries registered today</Text>
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.summary}>
         <Text style={styles.timeWorkedLabel}>Time Worked Today:</Text>
-        <Text style={styles.timeWorked}>05:40</Text>
+        <Text style={styles.timeWorked}>{calculateTimeWorked()}</Text>
       </View>
 
       <TouchableOpacity 
@@ -273,6 +351,26 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: isDarkMode ? '#ccc' : '#777',
+  },
+  noEntriesContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  noEntriesText: {
+    fontSize: 16,
+    color: isDarkMode ? '#ccc' : '#777',
+    fontStyle: 'italic',
   },
 });
 
