@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Redirect } from "expo-router";
 
@@ -12,13 +12,103 @@ import OpenDrawerButton from '@/components/OpenDrawerButton';
 import LogoutButton from '@/components/LogoutButton';
 import Loading from '@/components/Loading';
 import api from '@/utils/axios';
+import * as Location from 'expo-location';
+import Toast from 'react-native-toast-message';
 
 
 const Home = () => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const styles = getStyles(isDarkMode);
-  const { isAuthenticated, isLoading, token, user, company } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, isLoading, token, user, company } = useSelector((state: RootState) => state.auth);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Function to get current location
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({
+          type: 'error',
+          text1: 'Permission Denied',
+          text2: 'Location permission is required to register entries.',
+        });
+        return null;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      return {
+        latitude: location.coords.latitude.toString(),
+        longitude: location.coords.longitude.toString(),
+      };
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: 'Could not get current location. Entry will be registered without location.',
+      });
+      return null;
+    }
+  };
+
+  // Function to register entry
+  const registerEntry = async () => {
+    if (!user?._id || !company?._id || !token) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Missing user or company information.',
+      });
+      return;
+    }
+
+    setIsRegistering(true);
+    
+    try {
+      const location = await getCurrentLocation();
+      
+      const entryData = {
+        user_id: user._id,
+        company_id: company._id,
+        ...(location && {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        }),
+      };
+
+      const response = await api.post('/entries', entryData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Entry registered successfully!',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to register entry.',
+        });
+      }
+    } catch (error: any) {
+      console.error('Error registering entry:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to register entry. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   // Get current date formatted
   const getCurrentDate = () => {
@@ -69,8 +159,16 @@ const Home = () => {
         <Text style={styles.timeWorked}>05:40</Text>
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Register</Text>
+      <TouchableOpacity 
+        style={[styles.button, isRegistering && styles.buttonDisabled]} 
+        onPress={registerEntry}
+        disabled={isRegistering}
+      >
+        {isRegistering ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.buttonText}>Register</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -166,6 +264,10 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginHorizontal: 32,
+  },
+  buttonDisabled: {
+    backgroundColor: isDarkMode ? '#2a4a8a' : '#143260',
+    opacity: 0.8,
   },
   buttonText: {
     color: '#fff',
