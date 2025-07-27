@@ -96,10 +96,24 @@ export class AuthService {
 				name: user.name,
 				email: user.email,
 			},
+			company: {
+				_id: user.company._id,
+				name: user.company.name,
+				email: user.company.email,
+			},
 		} as {
 			access_token: string;
 			refresh_token: string;
-			user: { _id: string; name: string; email: string };
+			user: {
+				_id: string;
+				name: string;
+				email: string;
+			};
+			company: {
+				_id: string;
+				name: string;
+				email: string;
+			};
 		};
 	}
 
@@ -224,10 +238,24 @@ export class AuthService {
 				name: user.name,
 				email: user.email,
 			},
+			company: {
+				_id: user.company._id,
+				name: user.company.name,
+				email: user.company.email,
+			},
 		} as {
 			access_token: string;
 			refresh_token: string;
-			user: { _id: string; name: string; email: string };
+			user: {
+				_id: string;
+				name: string;
+				email: string;
+			};
+			company: {
+				_id: string;
+				name: string;
+				email: string;
+			};
 		};
 	}
 }

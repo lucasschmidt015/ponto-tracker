@@ -45,6 +45,9 @@ export class UsersService {
 					association: 'userRoles',
 					include: ['role'],
 				},
+				{
+					association: 'company',
+				},
 			],
 		});
 
@@ -64,6 +67,9 @@ export class UsersService {
 				{
 					association: 'userRoles',
 					include: ['role'],
+				},
+				{
+					association: 'company',
 				},
 			],
 			attributes: { exclude: ['password'] },
